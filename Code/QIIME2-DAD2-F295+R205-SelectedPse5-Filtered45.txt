@@ -1,0 +1,205 @@
+###activate conda environment
+conda activate qiime2-2021.4
+###importing data and demultiplexing sequences
+time qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path SelectedPse5_pe-33-manifest.txt \
+  --input-format PairedEndFastqManifestPhred33V2 \
+  --output-path SelectedPse5-Paired-end-demux.qza
+
+#summary of the distribution of sequence qualities at each position in your sequence data
+time qiime demux summarize \
+  --i-data SelectedPse5-Paired-end-demux.qza \
+  --o-visualization SelectedPse5-Paired-end-demux.qzv
+ 
+###DAD2 pipline
+##denoise
+#6 bases bacode and 20 bases primer
+#primers are 338F: ACTCCTACGGGAGGCAGCAG and 806R:GGACTACHVGGGTWTCTAAT
+#--p-trunc-len-f and --p-trunc-len-l was setted according to demultiplexing sequences result
+#overlap is 15
+##--p-n-threads was setted to 0 to use all available cores for multithreaded processing
+
+time qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs SelectedPse5-Paired-end-demux.qza \
+  --p-trim-left-f 26\
+  --p-trim-left-r 26 \
+  --p-trunc-len-f 295 \
+  --p-trunc-len-r 205 \
+  --p-n-threads 0 \
+  --o-table table-SelectedPse5-DAD2-F295+R205.qza \
+  --o-representative-sequences rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
+  --o-denoising-stats stats-SelectedPse5-DAD2-F295+R205.qza
+
+#output visualization
+qiime metadata tabulate \
+  --m-input-file stats-SelectedPse5-DAD2-F295+R205.qza  \
+  --o-visualization stats-SelectedPse5-DAD2-F295+R205.qzv
+
+qiime feature-table summarize \
+  --i-table table-SelectedPse5-DAD2-F295+R205.qza \
+  --o-visualization table-SelectedPse5-DAD2-F295+R205.qzv
+
+qiime feature-table tabulate-seqs \
+  --i-data  rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
+  --o-visualization  rep-seqs-SelectedPse5-DAD2-F295+R205.qzv
+
+
+###training feature classifiers with q2-feature-classifier
+##downloading the taxonomy data and representative sequence from silva 138 database
+qiime rescript get-silva-data \
+    --p-version '138' \
+    --p-target 'SSURef_NR99' \
+    --p-include-species-labels \
+    --o-silva-sequences silva-138-ssu-nr99-seqs.qza \
+    --o-silva-taxonomy silva-138-ssu-nr99-tax.qza
+
+##“Culling” low-quality sequences with cull-seqs
+##Here we’ll remove sequences that contain 5 or more ambiguous bases (IUPAC compliant ambiguity bases) 
+##and any homopolymers that are 8 or more bases in length.
+time qiime rescript cull-seqs \
+    --i-sequences silva-138-ssu-nr99-seqs.qza \
+    --o-clean-sequences silva-138-ssu-nr99-seqs-cleaned.qza
+
+##filtering sequences by length and taxonomy
+time qiime rescript filter-seqs-length-by-taxon \
+    --i-sequences silva-138-ssu-nr99-seqs-cleaned.qza \
+    --i-taxonomy silva-138-ssu-nr99-tax.qza \
+    --p-labels Archaea Bacteria Eukaryota \
+    --p-min-lens 900 1200 1400 \
+    --o-filtered-seqs silva-138-ssu-nr99-seqs-filt.qza \
+    --o-discarded-seqs silva-138-ssu-nr99-seqs-discard.qza 
+
+##dereplication of sequences and taxonomy
+time qiime rescript dereplicate \
+    --i-sequences silva-138-ssu-nr99-seqs-filt.qza  \
+    --i-taxa silva-138-ssu-nr99-tax.qza \
+    --p-rank-handles 'silva' \
+    --p-mode 'uniq' \
+    --o-dereplicated-sequences silva-138-ssu-nr99-seqs-derep-uniq.qza \
+    --o-dereplicated-taxa silva-138-ssu-nr99-tax-derep-uniq.qza
+
+#make amplicon-region specific classifier
+time qiime feature-classifier extract-reads \
+    --i-sequences silva-138-ssu-nr99-seqs-derep-uniq.qza \
+    --p-f-primer ACTCCTACGGGAGGCAGCAG \
+    --p-r-primer GGACTACHVGGGTWTCTAAT \
+    --p-n-jobs 5 \
+    --p-read-orientation 'forward' \
+    --o-reads silva-138-ssu-nr99-seqs-338f-806r.qza
+
+##dereplicate extracted region
+qiime rescript dereplicate \
+    --i-sequences silva-138-ssu-nr99-seqs-338f-806r.qza \
+    --i-taxa silva-138-ssu-nr99-tax-derep-uniq.qza \
+    --p-rank-handles 'silva' \
+    --p-mode 'uniq' \
+    --o-dereplicated-sequences silva-138-ssu-nr99-seqs-338f-806r-uniq.qza \
+    --o-dereplicated-taxa  silva-138-ssu-nr99-tax-338f-806r-derep-uniq.qza
+
+
+###train a Naive Bayes classifier 
+time qiime feature-classifier fit-classifier-naive-bayes \
+    --i-reference-reads silva-138-ssu-nr99-seqs-338f-806r-uniq.qza \
+    --p-classify--chunk-size 1200 \
+    --i-reference-taxonomy silva-138-ssu-nr99-tax-338f-806r-derep-uniq.qza \
+    --o-classifier silva-138-ssu-nr99-tax-338f-806r-derep-uniq-classifier.qza
+
+
+#classifying the representative sequences
+time qiime feature-classifier classify-sklearn \
+  --i-classifier training-feature-classifiers/silva-138-ssu-nr99-tax-338f-806r-derep-uniq-classifier.qza \
+  --i-reads SelectedPse5-DAD2-F295+R205/SelectedPse5-DAD2-F295+R205-Data/rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
+  --p-reads-per-batch 12000\
+  --p-n-jobs 1\
+  --o-classification SelectedPse5-DAD2-F295+R205/Taxonomy-SelectedPse5-DAD2-F295+R205/taxonomy-SelectedPse5-DAD2-F295+R205.qza
+
+#Output visualization
+time qiime metadata tabulate \
+  --m-input-file taxonomy-SelectedPse5-DAD2-F295+R205.qza \
+  --o-visualization taxonomy-SelectedPse5-DAD2-F295+R205.qzv
+
+
+###filtering Data
+
+##taxonomy-based filtering of tables and sequences
+#removing all features annotated as mitochondria or chloroplast
+
+qiime taxa filter-table \
+  --i-table SelectedPse5-DAD2-F295+R205/SelectedPse5-DAD2-F295+R205-Data/table-SelectedPse5-DAD2-F295+R205.qza \
+  --i-taxonomy SelectedPse5-DAD2-F295+R205/Taxonomy-SelectedPse5-DAD2-F295+R205/taxonomy-SelectedPse5-DAD2-F295+R205.qza \
+  --p-include p__ \
+  --p-exclude mitochondria,chloroplast \
+  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-with-phyla-no-mitochondria-no-chloroplast.qza
+  
+## total-frequency-based filtering
+#this filter remove all features with a total abundance(summed across all samples) of less than 10 as follows
+time qiime feature-table filter-features \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-with-phyla-no-mitochondria-no-chloroplast.qza \
+  --p-min-frequency 10 \
+  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qza
+
+#output visualization
+qiime feature-table summarize \
+  --i-table table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qza \
+  --o-visualization table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qzv
+
+##contingency-based filtering
+#Features that are present in only eight(>10%) samples could be filtered from a feature table as follows
+time qiime feature-table filter-features \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qza \
+  --p-min-samples 8 \
+  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza
+#output visualization 
+qiime feature-table summarize \
+  --i-table table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
+  --o-visualization table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qzv
+
+##library size normalization by scaling with ranked subsampling(SRS)
+#using SRS Shiny app for the determination of Cmin(sampling depth),reference doi:10.7717/peerj.9593
+
+qiime srs SRS \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
+  --p-c-min 17021 \
+  --o-normalized-table  SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+  --verbose
+  
+
+##Some features might be 0 abundance again, and should be removed
+time qiime feature-table filter-features \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+  --p-min-frequency 1 \
+  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza
+  
+##output visualization
+qiime feature-table summarize \
+  --i-table table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+  --o-visualization table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qzv
+
+##create representative sequence file according to the filtered feature table根据筛选后的表格，生成新的代表性序列文件
+qiime feature-table filter-seqs \
+   --i-data SelectedPse5-DAD2-F295+R205/SelectedPse5-DAD2-F295+R205-Data/rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
+   --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+   --o-filtered-data  SelectedPse5-DAD2-F295+R205/Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45.qza
+
+##appling FastTree to generate a phylogenetic tree from the masked alignment
+time qiime phylogeny align-to-tree-mafft-fasttree \
+  --i-sequences SelectedPse5-DAD2-F295+R205/Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45.qza \
+  --p-n-threads auto \
+  --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/mafft-fasttree-output-SelectedPse5-DAD2-F295+R205-Filtered45
+
+###Alpha diversity
+#chao 1 index
+  time qiime diversity alpha \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
+  --p-metric chao1\
+  --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/core-metrics-results/Chao1
+  
+#shannon diversity index
+  time qiime diversity alpha \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
+  --p-metric shannon\
+  --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/core-metrics-results/shannon
+ 
+#close the conda environment
+  conda deactivate
