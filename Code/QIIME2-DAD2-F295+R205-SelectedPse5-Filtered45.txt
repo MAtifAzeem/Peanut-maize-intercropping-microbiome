@@ -176,7 +176,7 @@ qiime feature-table summarize \
   --i-table table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
   --o-visualization table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qzv
 
-##create representative sequence file according to the filtered feature table根据筛选后的表格，生成新的代表性序列文件
+##create representative sequence file according to the filtered feature table
 qiime feature-table filter-seqs \
    --i-data SelectedPse5-DAD2-F295+R205/SelectedPse5-DAD2-F295+R205-Data/rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
    --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
@@ -191,13 +191,13 @@ time qiime phylogeny align-to-tree-mafft-fasttree \
 ###Alpha diversity
 #chao 1 index
   time qiime diversity alpha \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
   --p-metric chao1\
   --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/core-metrics-results/Chao1
   
 #shannon diversity index
   time qiime diversity alpha \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
+  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
   --p-metric shannon\
   --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/core-metrics-results/shannon
  
