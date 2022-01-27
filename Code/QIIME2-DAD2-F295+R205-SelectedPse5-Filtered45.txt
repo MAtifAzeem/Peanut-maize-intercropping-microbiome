@@ -7,7 +7,7 @@ time qiime tools import \
   --input-format PairedEndFastqManifestPhred33V2 \
   --output-path SelectedPse5-Paired-end-demux.qza
 
-#summary of the distribution of sequence qualities at each position in your sequence data
+##summary of the distribution of sequence qualities at each position in your sequence data
 time qiime demux summarize \
   --i-data SelectedPse5-Paired-end-demux.qza \
   --o-visualization SelectedPse5-Paired-end-demux.qzv
