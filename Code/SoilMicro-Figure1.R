@@ -1,16 +1,16 @@
 #### 1. loading required libraries ####
-library(ggplot2)#作图 plot
-library(ggpubr)#添加显著性标记, Add the significance marker
-library(ggsignif)#添加显著性标记, Add the significance marker
-library(dplyr)#数据清洗，Data cleaning
-library(plyr)#数据清洗，Data cleaning
-library(reshape2)#数据清洗，Data cleaning
-library(ggthemes)#ggplot所用主题，Themes for ggplot2
-library(readxl)#读入 excel, read excel
-library(showtext)#字体设置, font setting
-library(extrafont)#使用系统字体，Using the system fonts
-library(sysfonts)#加载系统字体，loading the system fonts
-library(Cairo)#抗锯齿,anti-aliasing
+library(ggplot2)#plot
+library(ggpubr)# Add the significance marker,Statistic analysis, and plot
+library(ggsignif)#Add the significance marker
+library(dplyr)#Data cleaning
+library(plyr)#，Data cleaning
+library(reshape2)#Data cleaning
+library(ggthemes)#Themes for ggplot2
+library(readxl)#excel, read excel
+library(showtext)#font setting
+library(extrafont)#，Using the system fonts
+library(sysfonts)#loading the system fonts
+library(Cairo)#anti-aliasing
 
 #### 2. Setting themes and working dictionary path ####
 loadfonts()
@@ -40,7 +40,7 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
                               legend.title = element_text(size = 6),
                               legend.background = element_blank(),
                               axis.line = element_line(color = "#4D4D4D",size=0.2),
-                              axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
+                              axis.ticks.length = unit(0.8, "mm"))
 
 wdImport<-("E:/Study/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
 wdOutput_Figure1 <- ("E:/Study/SCI/Soil Micro/SCI/Figures/Figures from R/Figure1")
