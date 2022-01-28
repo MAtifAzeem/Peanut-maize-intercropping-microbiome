@@ -98,32 +98,15 @@ setwd(wdImport)
 NormalPotPeanutYLSPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                        sheet = "Fig 1D")
 #### 6.2 Summary by grouping ####
-NormalPotPeanutYLSPADStat <- NormalPotPeanutYLSPAD%>%
+NormalPotPeanutYLSPAD_summary <- NormalPotPeanutYLSPAD%>%
   group_by(System,Days,Species,SystemSpecies,SpeciesDays,SystemSpeciesDays)%>%
   summarise_at("YL_SPAD",funs(mean,sd))
-PotPeanutYLSPAD2015Stat
+PotPeanutYLSPAD2015_summary
 
-#### 6.3 Student's t test ####
-#46 days post sowing(dps)
-Peanut46YLSPAD <- subset(NormalPotPeanutYLSPAD,SpeciesDays=="Peanut46")
-compare_means(data=Peanut46YLSPAD,YL_SPAD~System,method = "t.test")
-
-#53 dps
-Peanut53YLSPAD <- subset(NormalPotPeanutYLSPAD,SpeciesDays=="Peanut53")
-compare_means(data=Peanut53YLSPAD,YL_SPAD~System,method = "t.test")
-
-#63 dps
-Peanut63YLSPAD <- subset(NormalPotPeanutYLSPAD,SpeciesDays=="Peanut63")
-compare_means(data=Peanut63YLSPAD,YL_SPAD~System,method = "t.test")
-
-#73 dps
-Peanut73YLSPAD <- subset(NormalPotPeanutYLSPAD,SpeciesDays=="Peanut73")
-compare_means(data=Peanut73YLSPAD,YL_SPAD~System,method = "t.test")
-
-#80 dps
-Peanut80YLSPAD <- subset(NormalPotPeanutYLSPAD,SpeciesDays=="Peanut80")
-compare_means(data=Peanut80YLSPAD,YL_SPAD~System,method = "t.test")
-
+#### 6.3 Statistic analysis ####
+#Statistic analysis by days post sowing(dps)
+PotPeanutYLSPAD2015_Stat_byDays<-compare_means(data=NormalPotPeanutYLSPAD,YL_SPAD~SystemSpeciesDays,method = "t.test")
+View(PotPeanutYLSPAD2015_Stat_byDays)
 #### 7. Fig. 1E Peanut-Intercropping-Pot-Fe status ####
 #### 7.1 Import and process data ####
 setwd(wdImport)
@@ -195,14 +178,7 @@ PotSterilizationBiomass$SoilTreatment <-factor(PotSterilizationBiomass$SoilTreat
 PotSterilizationBiomass$System <-factor(PotSterilizationBiomass$System,level=c("MP","IP"))
 
 #### 8.2 Statistic analysis####
-PotSterilizationBiomass_IP<-filter(PotSterilizationBiomass,System=="IP")
-compare_means(data=PotSterilizationBiomass_IP,Biomass~SoilTreatment,method = "t.test")
-PotSterilizationBiomass_MP<-filter(PotSterilizationBiomass,System=="MP")
-compare_means(data=PotSterilizationBiomass_MP,Biomass~SoilTreatment,method = "t.test")
-PotSterilizationBiomass_Sterilization<-filter(PotSterilizationBiomass,SoilTreatment=="Sterilization")
-compare_means(data=PotSterilizationBiomass_Sterilization,Biomass~System,method = "t.test")
-PotSterilizationBiomass_Normal<-filter(PotSterilizationBiomass,SoilTreatment=="Normal")
-compare_means(data=PotSterilizationBiomass_Normal,Biomass~System,method = "t.test")
+compare_means(data=PotSterilizationBiomass,Biomass~Treatment,method = "t.test")
 
 #### 8.3 Plots ####
 Pot_Sterilizatiion_Bimass_Bar<-ggplot(PotSterilizationBiomass,aes(x=SoilTreatment,y=Biomass,color=System,group=System))+
@@ -230,14 +206,7 @@ PotSterilizationSPAD$SoilTreatment <-factor(PotSterilizationSPAD$SoilTreatment,l
 PotSterilizationSPAD$System <-factor(PotSterilizationSPAD$System,level=c("MP","IP"))
 
 #### 9.2 Statistic analysis####
-PotSterilizationSPAD_IP<-filter(PotSterilizationSPAD,System=="IP")
-compare_means(data=PotSterilizationSPAD_IP,YL_SPAD~SoilTreatment,method = "t.test")
-PotSterilizationSPAD_MP<-filter(PotSterilizationSPAD,System=="MP")
-compare_means(data=PotSterilizationSPAD_MP,YL_SPAD~SoilTreatment,method = "t.test")
-PotSterilizationSPAD_Sterilization<-filter(PotSterilizationSPAD,SoilTreatment=="Sterilization")
-compare_means(data=PotSterilizationSPAD_Sterilization,YL_SPAD~System,method = "t.test")
-PotSterilizationSPAD_Normal<-filter(PotSterilizationSPAD,SoilTreatment=="Normal")
-compare_means(data=PotSterilizationSPAD_Normal,YL_SPAD~System,method = "t.test")
+compare_means(data=PotSterilizationSPAD,YL_SPAD~Treatment,method = "t.test")
 
 #### 9.3 Plots ####
 Pot_Sterilizatiion_YL_SPAD_Bar<-ggplot(PotSterilizationSPAD,aes(x=SoilTreatment,y=YL_SPAD,color=System,group=System))+
@@ -265,14 +234,7 @@ PotSterilizationActiveFe$SoilTreatment <-factor(PotSterilizationActiveFe$SoilTre
 PotSterilizationActiveFe$System <-factor(PotSterilizationActiveFe$System,level=c("MP","IP"))
 
 #### 10.2 Statistic analysis####
-PotSterilizationActiveFe_IP<-filter(PotSterilizationActiveFe,System=="IP")
-compare_means(data=PotSterilizationActiveFe_IP,YL_ActiveFe~SoilTreatment,method = "t.test")
-PotSterilizationActiveFe_MP<-filter(PotSterilizationActiveFe,System=="MP")
-compare_means(data=PotSterilizationActiveFe_MP,YL_ActiveFe~SoilTreatment,method = "t.test")
-PotSterilizationActiveFe_Sterilization<-filter(PotSterilizationActiveFe,SoilTreatment=="Sterilization")
-compare_means(data=PotSterilizationActiveFe_Sterilization,YL_ActiveFe~System,method = "t.test")
-PotSterilizationActiveFe_Normal<-filter(PotSterilizationActiveFe,SoilTreatment=="Normal")
-compare_means(data=PotSterilizationActiveFe_Normal,YL_ActiveFe~System,method = "t.test")
+compare_means(data=PotSterilizationActiveFe,YL_ActiveFe~Treatment,method = "t.test")
 
 #### 10.3 Plots ####
 Pot_Sterilizatiion_YL_ActiveFe_Bar<-ggplot(PotSterilizationActiveFe,aes(x=SoilTreatment,y=YL_ActiveFe,color=System,group=System))+
