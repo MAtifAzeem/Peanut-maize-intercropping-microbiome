@@ -1,16 +1,16 @@
 ###activate conda environment
-conda activate qiime2-2021.4
+conda activate qiime2-2021.8
 ###importing data and demultiplexing sequences
 time qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
-  --input-path SelectedPse5_pe-33-manifest.txt \
+  --input-path FourStages_pe-33-manifest.txt \
   --input-format PairedEndFastqManifestPhred33V2 \
-  --output-path SelectedPse5-Paired-end-demux.qza
+  --output-path FourStages-Paired-end-demux.qza
 
 ##summary of the distribution of sequence qualities at each position in your sequence data
 time qiime demux summarize \
-  --i-data SelectedPse5-Paired-end-demux.qza \
-  --o-visualization SelectedPse5-Paired-end-demux.qzv
+  --i-data FourStages-Paired-end-demux.qza \
+  --o-visualization FourStages-Paired-end-demux.qzv
  
 ###DAD2 pipline
 ##denoise
@@ -21,31 +21,36 @@ time qiime demux summarize \
 ##--p-n-threads was setted to 0 to use all available cores for multithreaded processing
 
 time qiime dada2 denoise-paired \
-  --i-demultiplexed-seqs SelectedPse5-Paired-end-demux.qza \
+  --i-demultiplexed-seqs FourStages-Paired-end-demux.qza \
   --p-trim-left-f 26\
   --p-trim-left-r 26 \
   --p-trunc-len-f 295 \
   --p-trunc-len-r 205 \
   --p-n-threads 0 \
-  --o-table table-SelectedPse5-DAD2-F295+R205.qza \
-  --o-representative-sequences rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
-  --o-denoising-stats stats-SelectedPse5-DAD2-F295+R205.qza
+  --o-table table-FourStages-DAD2-F295+R205.qza \
+  --o-representative-sequences rep-seqs-FourStages-DAD2-F295+R205.qza \
+  --o-denoising-stats stats-FourStages-DAD2-F295+R205.qza
 
 #output visualization
 qiime metadata tabulate \
-  --m-input-file stats-SelectedPse5-DAD2-F295+R205.qza  \
-  --o-visualization stats-SelectedPse5-DAD2-F295+R205.qzv
+  --m-input-file stats-FourStages-DAD2-F295+R205.qza  \
+  --o-visualization stats-FourStages-DAD2-F295+R205.qzv
 
 qiime feature-table summarize \
-  --i-table table-SelectedPse5-DAD2-F295+R205.qza \
-  --o-visualization table-SelectedPse5-DAD2-F295+R205.qzv
+  --i-table table-FourStages-DAD2-F295+R205.qza \
+  --o-visualization table-FourStages-DAD2-F295+R205.qzv
 
 qiime feature-table tabulate-seqs \
-  --i-data  rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
-  --o-visualization  rep-seqs-SelectedPse5-DAD2-F295+R205.qzv
-
+  --i-data  rep-seqs-FourStages-DAD2-F295+R205.qza \
+  --o-visualization  rep-seqs-FourStages-DAD2-F295+R205.qzv
 
 ###training feature classifiers with q2-feature-classifier
+## installing RESCRIPt##
+sudo apt update
+sudo apt install git
+conda install -c conda-forge -c bioconda -c qiime2 -c defaults xmltodict
+pip install git+https://github.com/bokulich-lab/RESCRIPt.git
+
 ##downloading the taxonomy data and representative sequence from silva 138 database
 qiime rescript get-silva-data \
     --p-version '138' \
@@ -108,98 +113,96 @@ time qiime feature-classifier fit-classifier-naive-bayes \
 
 #classifying the representative sequences
 time qiime feature-classifier classify-sklearn \
-  --i-classifier training-feature-classifiers/silva-138-ssu-nr99-tax-338f-806r-derep-uniq-classifier.qza \
-  --i-reads SelectedPse5-DAD2-F295+R205/SelectedPse5-DAD2-F295+R205-Data/rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
+  --i-classifier training-feature-classifiers-qiime2-2020.11/silva-138-ssu-nr99-tax-338f-806r-derep-uniq-classifier-qiime2-2020.11.qza \
+  --i-reads FourStages/FourStages-DAD2-F295+R205/FourStages-DAD2-F295+R205-Data/rep-seqs-FourStages-DAD2-F295+R205.qza \
   --p-reads-per-batch 12000\
   --p-n-jobs 1\
-  --o-classification SelectedPse5-DAD2-F295+R205/Taxonomy-SelectedPse5-DAD2-F295+R205/taxonomy-SelectedPse5-DAD2-F295+R205.qza
+  --o-classification FourStages/FourStages-DAD2-F295+R205/Taxonomy-FourStages-DAD2-F295+R205/taxonomy-FourStages-DAD2-F295+R205.qza
 
 #Output visualization
 time qiime metadata tabulate \
-  --m-input-file taxonomy-SelectedPse5-DAD2-F295+R205.qza \
-  --o-visualization taxonomy-SelectedPse5-DAD2-F295+R205.qzv
-
+  --m-input-file taxonomy-FourStages-DAD2-F295+R205.qza \
+  --o-visualization taxonomy-FourStages-DAD2-F295+R205.qzv
 
 ###filtering Data
-
 ##taxonomy-based filtering of tables and sequences
 #removing all features annotated as mitochondria or chloroplast
-
 qiime taxa filter-table \
-  --i-table SelectedPse5-DAD2-F295+R205/SelectedPse5-DAD2-F295+R205-Data/table-SelectedPse5-DAD2-F295+R205.qza \
-  --i-taxonomy SelectedPse5-DAD2-F295+R205/Taxonomy-SelectedPse5-DAD2-F295+R205/taxonomy-SelectedPse5-DAD2-F295+R205.qza \
+  --i-table FourStages/FourStages-DAD2-F295+R205/FourStages-DAD2-F295+R205-Data/table-FourStages-DAD2-F295+R205.qza \
+  --i-taxonomy FourStages/FourStages-DAD2-F295+R205/Taxonomy-FourStages-DAD2-F295+R205/taxonomy-FourStages-DAD2-F295+R205.qza \
   --p-include p__ \
   --p-exclude mitochondria,chloroplast \
-  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-with-phyla-no-mitochondria-no-chloroplast.qza
+  --o-filtered-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/table-FourStages-with-phyla-no-mitochondria-no-chloroplast.qza
   
 ## total-frequency-based filtering
 #this filter remove all features with a total abundance(summed across all samples) of less than 10 as follows
 time qiime feature-table filter-features \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-with-phyla-no-mitochondria-no-chloroplast.qza \
+  --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/table-FourStages-with-phyla-no-mitochondria-no-chloroplast.qza \
   --p-min-frequency 10 \
-  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qza
+  --o-filtered-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/table-FourStages-DAD2-F295+R205-frequency-Filtered1.qza
 
 #output visualization
 qiime feature-table summarize \
-  --i-table table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qza \
-  --o-visualization table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qzv
+  --i-table table-FourStages-DAD2-F295+R205-frequency-Filtered1.qza \
+  --o-visualization table-FourStages-DAD2-F295+R205-frequency-Filtered1.qzv
 
 ##contingency-based filtering
 #Features that are present in only eight(>10%) samples could be filtered from a feature table as follows
 time qiime feature-table filter-features \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-frequency-Filtered45.qza \
-  --p-min-samples 8 \
-  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza
+  --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/table-FourStages-DAD2-F295+R205-frequency-Filtered1.qza \
+  --p-min-samples 6 \
+  --o-filtered-table  FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1.qza\
+
 #output visualization 
 qiime feature-table summarize \
-  --i-table table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
-  --o-visualization table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qzv
+  --i-table table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1.qza \
+  --o-visualization table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1.qzv
 
 ##library size normalization by scaling with ranked subsampling(SRS)
 #using SRS Shiny app for the determination of Cmin(sampling depth),reference doi:10.7717/peerj.9593
-
+pip instFourStages git+https://github.com/vitorheidrich/q2-srs.git
 qiime srs SRS \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45.qza \
-  --p-c-min 17021 \
-  --o-normalized-table  SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+  --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1.qza \
+  --p-c-min 17063 \
+  --o-normalized-table  FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/Size-Normalization/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qza \
   --verbose
   
 
 ##Some features might be 0 abundance again, and should be removed
 time qiime feature-table filter-features \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+  --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/Size-Normalization/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qza \
   --p-min-frequency 1 \
-  --o-filtered-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza
+  --o-filtered-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/Size-Normalization/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qza
   
 ##output visualization
 qiime feature-table summarize \
-  --i-table table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
-  --o-visualization table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qzv
+  --i-table table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qza \
+  --o-visualization table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qzv
 
 ##create representative sequence file according to the filtered feature table
 qiime feature-table filter-seqs \
-   --i-data SelectedPse5-DAD2-F295+R205/SelectedPse5-DAD2-F295+R205-Data/rep-seqs-SelectedPse5-DAD2-F295+R205.qza \
-   --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
-   --o-filtered-data  SelectedPse5-DAD2-F295+R205/Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45.qza
-
+   --i-data FourStages/FourStages-DAD2-F295+R205/FourStages-DAD2-F295+R205-Data/rep-seqs-FourStages-DAD2-F295+R205.qza \
+   --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/Size-Normalization/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qza \
+   --o-filtered-data  FourStages/FourStages-DAD2-F295+R205/Filtered1/rep-seqs-FourStages-DAD2-F295+R205-Filtered1/rep-seqs-FourStages-DAD2-F295+R205-Filtered1.qza
+   
 ##appling FastTree to generate a phylogenetic tree from the masked alignment
 time qiime phylogeny align-to-tree-mafft-fasttree \
-  --i-sequences SelectedPse5-DAD2-F295+R205/Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45/rep-seqs-SelectedPse5-DAD2-F295+R205-Filtered45.qza \
+  --i-sequences FourStages/FourStages-DAD2-F295+R205/Filtered1/rep-seqs-FourStages-DAD2-F295+R205-Filtered1/rep-seqs-FourStages-DAD2-F295+R205-Filtered1.qza \
   --p-n-threads auto \
-  --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/mafft-fasttree-output-SelectedPse5-DAD2-F295+R205-Filtered45
+  --output-dir FourStages/FourStages-DAD2-F295+R205/Filtered1/mafft-fasttree-output-FourStages-DAD2-F295+R205-Filtered1
 
 ###Alpha diversity
 #chao 1 index
-  time qiime diversity alpha \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+time qiime diversity alpha \
+  --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/Size-Normalization/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qza \
   --p-metric chao1\
-  --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/core-metrics-results/Chao1
+  --output-dir FourStages/FourStages-DAD2-F295+R205/Filtered1/core-metrics-results/Chao1
   
 #shannon diversity index
   time qiime diversity alpha \
-  --i-table SelectedPse5-DAD2-F295+R205/Filtered45/Filtered45-Data/Size-Normalization/table-SelectedPse5-DAD2-F295+R205-filtered-table-sample-contingency-Filtered45-normal.qza \
+  --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/Size-Normalization/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1-normal.qza \
   --p-metric shannon\
-  --output-dir SelectedPse5-DAD2-F295+R205/Filtered45/core-metrics-results/shannon
- 
+  --output-dir FourStages/FourStages-DAD2-F295+R205/Filtered1/core-metrics-results/shannon
+  
 #close the conda environment
   conda deactivate

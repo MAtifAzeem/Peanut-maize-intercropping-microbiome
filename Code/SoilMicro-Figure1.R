@@ -5,6 +5,7 @@ library(ggsignif)#Add the significance marker
 library(dplyr)#Data cleaning
 library(plyr)#，Data cleaning
 library(reshape2)#Data cleaning
+library(ggsci)#color plates from top journal
 library(ggthemes)#Themes for ggplot2
 library(readxl)#excel, read excel
 library(showtext)#font setting
