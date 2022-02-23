@@ -1,17 +1,17 @@
 #### 1. loading required libraries ####
-library(ggplot2)#plot
-library(ggpubr)# Add the significance marker,Statistic analysis, and plot
-library(ggsignif)#Add the significance marker
-library(dplyr)#Data cleaning
-library(plyr)#，Data cleaning
-library(reshape2)#Data cleaning
-library(ggsci)#color plates from top journal
-library(ggthemes)#Themes for ggplot2
-library(readxl)#excel, read excel
-library(showtext)#font setting
-library(extrafont)#，Using the system fonts
-library(sysfonts)#loading the system fonts
-library(Cairo)#anti-aliasing
+library(ggplot2)#作图 plot
+library(ggpubr)#添加显著性标记, Add the significance marker
+library(ggsignif)#添加显著性标记, Add the significance marker
+library(dplyr)#数据清洗，Data cleaning
+library(plyr)#数据清洗，Data cleaning
+library(reshape2)#数据清洗，Data cleaning
+library(ggthemes)#ggplot所用主题，Themes for ggplot2
+library(ggsci)#TOP期刊配色方案, color plates from top journal
+library(readxl)#读入 excel, read excel
+library(showtext)#字体设置, font setting
+library(extrafont)#使用系统字体，Using the system fonts
+library(sysfonts)#加载系统字体，loading the system fonts
+library(Cairo)#抗锯齿,anti-aliasing
 
 #### 2. Setting themes and working dictionary path ####
 loadfonts()
@@ -47,8 +47,8 @@ wdImport<-("E:/Study/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
 wdOutput_Figure1 <- ("E:/Study/SCI/Soil Micro/SCI/Figures/Figures from R/Figure1")
 
 
-#### 4. Fig. 1C-Field-LER-NetEffect-SamePositon####
-#### 4.1 Import and process data ####
+#### 4. Fig. 1c-Field-LER-NetEffect-SamePositon####
+### 4.1 Import and process data ###
 setwd(wdImport)
 Filed_LER_NE_SamePosition <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                                     sheet = "Fig 1C same position")
@@ -56,7 +56,7 @@ Filed_LER_NE_SamePosition <- read_excel("Intercropping-microbiome-Data for submi
 sapply(Filed_LER_NE_SamePosition,class)
 Filed_LER_NE_SamePosition[(6:10),"Value"]<-0-Filed_LER_NE_SamePosition[(6:10),"Value"]
 Filed_LER_NE_SamePosition$Year<-factor(Filed_LER_NE_SamePosition$Year, levels = c(2015,2014,2013,2012,2011))
-#### 4.1 Plot ####
+### 4.1 Plot ###
 Filed_LER_NE_SamePosition_Barplot <- ggplot(Filed_LER_NE_SamePosition,
                                              aes(x=Year, y=Value, fill=Indicator)) + 
   geom_bar(stat="identity", position="identity",width = 0.9,color="black",size=0.1)+
@@ -70,8 +70,8 @@ ggsave("Filed_LER_NE_SamePosition_Barplot.pdf",
        Filed_LER_NE_SamePosition_Barplot,
        device=cairo_pdf,width=29,height=27,dpi = 300,units = "mm")
 
-#### 5. Fig. 1C-Field-LER-NetEffect-same year####
-#### 5.1 Import and process data ####
+#### 5. Fig. 1c-Field-LER-NetEffect-same year####
+### 5.1 Import and process data ###
 setwd(wdImport)
 Filed_LER_NE_SameYear <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                                          sheet = "Fig 1C same year")
@@ -79,7 +79,7 @@ Filed_LER_NE_SameYear <- read_excel("Intercropping-microbiome-Data for submit.xl
 sapply(Filed_LER_NE_SameYear,class)
 Filed_LER_NE_SameYear[(6:10),"Value"]<-0-Filed_LER_NE_SameYear[(6:10),"Value"]
 Filed_LER_NE_SameYear$Farm<-factor(Filed_LER_NE_SameYear$Farm, levels = c("#5","#4","#3","#2","#1"))
-#### 5.2 Plot ####
+### 5.2 Plot ###
 Filed_LER_NE_SameYear_Barplot <- ggplot(Filed_LER_NE_SameYear,
                                              aes(x=Farm, y=Value, fill=Indicator)) + 
   geom_bar(stat="identity", position="identity",width = 0.9,color="black",size=0.1)+
@@ -93,26 +93,26 @@ ggsave("Filed_LER_NE_SameYear_Barplot.pdf",
        Filed_LER_NE_SameYear_Barplot,
        device=cairo_pdf,width=25,height=25,dpi = 300,units = "mm")
 
-#### 6. Fig. 1D-Peanut-Young leaves-SPAD value in young leaves####
-#### 6.1 Import and process data ####
+#### 6. Fig. 1d-Peanut-Young leaves-SPAD value in young leaves####
+### 6.1 Import and process data ###
 setwd(wdImport)
 NormalPotPeanutYLSPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                        sheet = "Fig 1D")
-#### 6.2 Summary by grouping ####
+### 6.2 Summary by grouping ###
 NormalPotPeanutYLSPAD_summary <- NormalPotPeanutYLSPAD%>%
   group_by(System,Days,Species,SystemSpecies,SpeciesDays,SystemSpeciesDays)%>%
   summarise_at("YL_SPAD",funs(mean,sd))
 PotPeanutYLSPAD2015_summary
 
-#### 6.3 Statistic analysis ####
+### 6.3 Statistic analysis ###
 #Statistic analysis by days post sowing(dps)
 PotPeanutYLSPAD2015_Stat_byDays<-compare_means(data=NormalPotPeanutYLSPAD,YL_SPAD~SystemSpeciesDays,method = "t.test")
 View(PotPeanutYLSPAD2015_Stat_byDays)
-#### 7. Fig. 1E Peanut-Intercropping-Pot-Fe status ####
+#### 7. Fig. 1e Peanut-Intercropping-Pot-Fe status ####
 #### 7.1 Import and process data ####
 setwd(wdImport)
 NormalPotPeanutFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                  sheet = "Fig 1E")
+                                  sheet = "fig 1e")
 
 NormalPotPeanutFe$Species <- factor(NormalPotPeanutFe$Species,levels = c("Peanut","Maize"))
 NormalPotPeanutFe$System <- factor(NormalPotPeanutFe$System,levels = c("Monocropping","Intercropping"))
@@ -129,8 +129,8 @@ Pot_NormalPotPeanut_ActiveFe_line<-ggplot(NormalPotPeanutFe, aes(x=Days, y=YL_Ac
                alpha=I(.2)) +
   stat_summary(fun="mean", geom="line",size=0.5,aes(col=SystemSpecies)) +
   stat_summary(fun="mean", geom="point",size=0.5,aes(col=SystemSpecies)) +
-  FacetTheme+
-  scale_x_continuous(breaks=c(46,53,63,73,80),limits=c(40,84))+
+  mytheme1+
+  scale_x_continuous(breaks=c(46,53,63,73),limits=c(38,80))+
   labs(x="dps",
        y="Concentration",parse =T)+
   scale_color_npg()+scale_fill_npg()+
@@ -141,7 +141,7 @@ setwd(wdOutput_Figure1)
 getwd()
 ggsave("Pot_NormalPotPeanut_ActiveFe_line.pdf",
        Pot_NormalPotPeanut_ActiveFe_line,
-       device=cairo_pdf,width=52,height=44,dpi = 300,units = "mm")
+       device=cairo_pdf,width=44,height=44,dpi = 300,units = "mm")
 
 #### 7.3 Fig.1E Peanut-Intercropping-Pot-Active Fe concentration in young leaves####
 #### 7.3.1 Statistic analysis ####
@@ -154,8 +154,8 @@ Pot_NormalPotPeanut_AvailableFe_line<-ggplot(NormalPotPeanutFe, aes(x=Days, y=Av
                alpha=I(.2)) +
   stat_summary(fun="mean", geom="line",size=0.5,aes(col=SystemSpecies)) +
   stat_summary(fun="mean", geom="point",size=0.5,aes(col=SystemSpecies)) +
-  FacetTheme+
-  scale_x_continuous(breaks=c(46,53,63,73,80),limits=c(40,84))+
+  mytheme1+
+  scale_x_continuous(breaks=c(46,53,63,73),limits=c(38,80))+
   labs(x="dps",
        y="Concentration",parse =T)+
   scale_color_npg()+scale_fill_npg()+
@@ -166,7 +166,7 @@ setwd(wdOutput_Figure1)
 getwd()
 ggsave("Pot_NormalPotPeanut_AvailableFe_line.pdf",
        Pot_NormalPotPeanut_AvailableFe_line,
-       device=cairo_pdf,width=52,height=44,dpi = 300,units = "mm")
+       device=cairo_pdf,width=44,height=44,dpi = 300,units = "mm")
 
 #### 8. Fig. 1F-Peanut-sterilization-biomass####
 #### 8.1 Import and process data ####
