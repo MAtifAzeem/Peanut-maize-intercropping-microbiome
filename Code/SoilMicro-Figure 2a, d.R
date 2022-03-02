@@ -141,48 +141,20 @@ getwd()
 ggsave(paste("shannon_maize_plot",".pdf",sep=""),
        shannon_maize_plot,device=cairo_pdf,width=63,height=32,dpi = 600,units = "mm")
 
-#### 4. Fig.2c ####
+#### 4. Fig.2d ####
 ### 4.1 Import and process data ###
-setwd(wdImport)
-TOP10_Phylum_percentage <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                         sheet = "fig 2c")
-
-TOP10_Phylum_percentage_melt<-reshape2::melt(TOP10_Phylum_percentage,
-                                   id=c("ID","Days","SystemSpecies"),variable.name = "Phylum",
-                                   measure.vars=c("Proteobacteria","Actinobacteriota","Chloroflexi","Acidobacteriota","Bacteroidota",
-                                                  "Patescibacteria","Gemmatimonadota","Firmicutes","Myxococcota","Verrucomicrobiota"),
-                                   value.name = "Percent")
-TOP10_Phylum_percentage_melt$SystemSpecies<-factor(TOP10_Phylum_percentage_melt$SystemSpecies,levels = c("MP","IP","IM","MM"))
-
-TOP10_Phylum_percentage_Pot<-ggplot(TOP10_Phylum_percentage_melt, aes(x=factor(Days), y=Percent,group=SystemSpecies))+
-  facet_wrap(.~Phylum,scales = "free",nrow = 2)+
-  geom_smooth(method = "loess", aes(color=SystemSpecies,fill=SystemSpecies),size=0.5,alpha=0.05,se=T,span = 2)+
-  geom_point(aes(color=SystemSpecies),size=0.1)+
-  labs(x="",
-       y="relative abundance(%)",parse =T)+
-    scale_color_manual(values = c("#4D78B2","#e31a1c","#E19896","#B3CDE2"))+
-    scale_fill_manual(values = c("#4D78B2","#e31a1c","#E19896","#B3CDE2"))+
-  mytheme1
-TOP10_Phylum_percentage_Pot
-setwd(wdOutput_Figure2)
-getwd()
-ggsave(paste("TOP10_Phylum_percentage_Pot",".pdf",sep=""),
-       TOP10_Phylum_percentage_Pot,device=cairo_pdf,width=190,height=60,dpi = 600,units = "mm")
-
-#### 5. Fig.2d ####
-### 5.1 Import and process data ###
 setwd(wdImport)
 NST_results <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                                       sheet = "fig 2e")
 
 NST_results$group<-factor(NST_results$group,levels = c("Bulk","IP","IM","MP","MM"))
 
-### 5.2 ###
+### 4.2 ###
 compare_means(data=NST_results,NST_score~group,method = "kruskal.test")
 compare_means(data=NST_results,NST_score~group,method = "wilcox.test")
 
 
-### 5.3 plots ###
+### 4.3 plots ###
 NST_results_Pots<-ggplot(NST_results,aes(x=group,y=NST_score))+
   geom_violin(aes(fill=group),width=1) +
   geom_jitter(aes(fill=group),width = 0.05,shape=21,color="black")+
