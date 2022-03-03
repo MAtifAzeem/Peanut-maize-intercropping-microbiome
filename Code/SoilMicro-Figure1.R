@@ -46,7 +46,6 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
 wdImport<-("E:/Study/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
 wdOutput_Figure1 <- ("E:/Study/SCI/Soil Micro/SCI/Figures/Figures from R/Figure1")
 
-
 #### 4. Fig. 1c-Field-LER-NetEffect-SamePositon####
 ### 4.1 Import and process data ###
 setwd(wdImport)
