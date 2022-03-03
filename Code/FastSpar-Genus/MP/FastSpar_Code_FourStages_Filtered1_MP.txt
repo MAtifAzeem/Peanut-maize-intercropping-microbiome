@@ -1,16 +1,16 @@
 #in Lunix
 #scwatts/fastspar: Rapid and scalable correlation estimation for compositional data (github.com)
-####OUT表格的开头改成#OTU ID ####
+###
 fastspar --iterations 100 -x 20 --threads 6 --seed 198 --otu_table GenusCountMPFastSparWithoutAllZero_FourStages_Filtered1.tsv --correlation GenusCountMPFastSparWithoutAllZero_FourStages_Filtered1_median_correlation.tsv --covariance GenusCountMPFastSparWithoutAllZero_FourStages_Filtered1_median_covariance.tsv
-####计算p值
-####首先，生成 1000 个随机矩阵：
-#生成文件夹
+###calculating p value
+## make dictionary
 mkdir bootstrap_counts
-#
+#bootstrap 1000times
 fastspar_bootstrap --threads 8 --number 1000 --otu_table GenusCountMPFastSparWithoutAllZero_FourStages_Filtered1.tsv --prefix bootstrap_counts/GenusCountMPFourStages_Filtered1FastSparBootstrapData
-####然后计算每个矩阵的相关性（并行计算）
+#### parallel calculating SparCC value of every matrix
 mkdir bootstrap_correlation
 ####需要安装parallel并行计算
+## make dictionary
 parallel fastspar -y --otu_table {} --correlation bootstrap_correlation/cor_{/} --covariance bootstrap_correlation/cov_{/} -i 5 ::: bootstrap_counts/*
-####计算p值
+####p value
 fastspar_pvalues --otu_table GenusCountMPFastSparWithoutAllZero_FourStages_Filtered1.tsv --correlation GenusCountMPFastSparWithoutAllZero_FourStages_Filtered1_median_correlation.tsv --prefix bootstrap_correlation/cor_GenusCountMPFourStages_Filtered1FastSparBootstrapData_ --permutations 1000 --outfile GenusCountMPFourStages_Filtered1_pvalues.tsv
