@@ -45,17 +45,28 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
 
 wdImport<-("E:/Study/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
 wdOutput_Figure1 <- ("E:/Study/SCI/Soil Micro/SCI/Figures/Figures from R/Figure1")
+#### 4. Fig. 1b-Field-SPAD and Acitve Fe ####
+setwd(wdImport)
+IPvsMP_Field_SPAD<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                                        sheet = "fig 1b SPAD")
+class(IPvsMP_Field_SPAD)
+compare_means(YL_SPAD~Treatment,IPvsMP_Field_SPAD,method="t.test")
 
-#### 4. Fig. 1c-Field-LER-NetEffect-SamePositon####
-### 4.1 Import and process data ###
+IPvsMP_Field_ActiveFe<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                               sheet = "fig 1b ActiveFe")
+
+compare_means(YL_ActiveFe~Treatment,IPvsMP_Field_ActiveFe,method="t.test")
+
+#### 5. Fig. 1c-Field-LER-NetEffect-SamePositon####
+### 5.1 Import and process data ###
 setwd(wdImport)
 Filed_LER_NE_SamePosition <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                    sheet = "Fig 1C same position")
+                                    sheet = "fig 1c same position")
 
 sapply(Filed_LER_NE_SamePosition,class)
 Filed_LER_NE_SamePosition[(6:10),"Value"]<-0-Filed_LER_NE_SamePosition[(6:10),"Value"]
 Filed_LER_NE_SamePosition$Year<-factor(Filed_LER_NE_SamePosition$Year, levels = c(2015,2014,2013,2012,2011))
-### 4.1 Plot ###
+### 5.1 Plot ###
 Filed_LER_NE_SamePosition_Barplot <- ggplot(Filed_LER_NE_SamePosition,
                                              aes(x=Year, y=Value, fill=Indicator)) + 
   geom_bar(stat="identity", position="identity",width = 0.9,color="black",size=0.1)+
@@ -63,22 +74,22 @@ Filed_LER_NE_SamePosition_Barplot <- ggplot(Filed_LER_NE_SamePosition,
   scale_fill_manual(values = c("#bebada","#8dd3c7"))+
   theme(panel.background = element_rect(fill="#fbb4ae",size = 0.1))
 Filed_LER_NE_SamePosition_Barplot
-setwd(wdOutput_Figure1)
+setwd(wdOutput_figure1)
 getwd()
 ggsave("Filed_LER_NE_SamePosition_Barplot.pdf",
        Filed_LER_NE_SamePosition_Barplot,
        device=cairo_pdf,width=29,height=27,dpi = 300,units = "mm")
 
-#### 5. Fig. 1c-Field-LER-NetEffect-same year####
-### 5.1 Import and process data ###
+#### 6. fig. 1c-Field-LER-NetEffect-same year####
+### 6.1 Import and process data ###
 setwd(wdImport)
 Filed_LER_NE_SameYear <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                         sheet = "Fig 1C same year")
+                                         sheet = "fig 1c same year")
 
 sapply(Filed_LER_NE_SameYear,class)
 Filed_LER_NE_SameYear[(6:10),"Value"]<-0-Filed_LER_NE_SameYear[(6:10),"Value"]
 Filed_LER_NE_SameYear$Farm<-factor(Filed_LER_NE_SameYear$Farm, levels = c("#5","#4","#3","#2","#1"))
-### 5.2 Plot ###
+### 6.2 Plot ###
 Filed_LER_NE_SameYear_Barplot <- ggplot(Filed_LER_NE_SameYear,
                                              aes(x=Farm, y=Value, fill=Indicator)) + 
   geom_bar(stat="identity", position="identity",width = 0.9,color="black",size=0.1)+
@@ -92,23 +103,22 @@ ggsave("Filed_LER_NE_SameYear_Barplot.pdf",
        Filed_LER_NE_SameYear_Barplot,
        device=cairo_pdf,width=25,height=25,dpi = 300,units = "mm")
 
-#### 6. Fig. 1d-Peanut-Young leaves-SPAD value in young leaves####
-### 6.1 Import and process data ###
+#### 7. Fig. 1d-Peanut-Young leaves-SPAD value in young leaves####
+### 7.1 Import and process data ###
 setwd(wdImport)
 NormalPotPeanutYLSPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                       sheet = "Fig 1D")
-### 6.2 Summary by grouping ###
+                       sheet = "fig 1d")
+### 7.2 Summary by grouping ###
 NormalPotPeanutYLSPAD_summary <- NormalPotPeanutYLSPAD%>%
   group_by(System,Days,Species,SystemSpecies,SpeciesDays,SystemSpeciesDays)%>%
   summarise_at("YL_SPAD",funs(mean,sd))
-PotPeanutYLSPAD2015_summary
+NormalPotPeanutYLSPAD_summary
 
-### 6.3 Statistic analysis ###
+### 7.3 Statistic analysis ###
 #Statistic analysis by days post sowing(dps)
-PotPeanutYLSPAD2015_Stat_byDays<-compare_means(data=NormalPotPeanutYLSPAD,YL_SPAD~SystemSpeciesDays,method = "t.test")
-View(PotPeanutYLSPAD2015_Stat_byDays)
-#### 7. Fig. 1e Peanut-Intercropping-Pot-Fe status ####
-#### 7.1 Import and process data ####
+compare_means(data=NormalPotPeanutYLSPAD,YL_SPAD~SystemSpeciesDays,method = "t.test")
+#### 8. Fig. 1e Peanut-Intercropping-Pot-Fe status ####
+### 8.1 Import and process data ###
 setwd(wdImport)
 NormalPotPeanutFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                                   sheet = "fig 1e")
@@ -117,12 +127,12 @@ NormalPotPeanutFe$Species <- factor(NormalPotPeanutFe$Species,levels = c("Peanut
 NormalPotPeanutFe$System <- factor(NormalPotPeanutFe$System,levels = c("Monocropping","Intercropping"))
 NormalPotPeanutFe$SystemSpecies <- factor(NormalPotPeanutFe$SystemSpecies,levels = c("MP","IP"))
 
-#### 7.2 Fig.1E Peanut-Intercropping-Pot-Available Fe concentration in rhizosphere####
-#### 7.2.1 Statistic analysis ####
+### 8.2 Fig.1E Peanut-Intercropping-Pot-Available Fe concentration in rhizosphere###
+## 8.2.1 Statistic analysis ##
 ActiveFe_aov<-aov(data=NormalPotPeanutFe,YL_ActiveFe~System+Days+Days*System)
 summary(ActiveFe_aov)
 
-#### 7.2.2 Plots ####
+## 8.2.2 Plots ##
 Pot_NormalPotPeanut_ActiveFe_line<-ggplot(NormalPotPeanutFe, aes(x=Days, y=YL_ActiveFe, fill=SystemSpecies,group=SystemSpecies)) +
   stat_summary(fun.data="mean_cl_boot", geom="ribbon",
                alpha=I(.2)) +
@@ -142,12 +152,12 @@ ggsave("Pot_NormalPotPeanut_ActiveFe_line.pdf",
        Pot_NormalPotPeanut_ActiveFe_line,
        device=cairo_pdf,width=44,height=44,dpi = 300,units = "mm")
 
-#### 7.3 Fig.1E Peanut-Intercropping-Pot-Active Fe concentration in young leaves####
-#### 7.3.1 Statistic analysis ####
+### 8.3 Fig.1E Peanut-Intercropping-Pot-Active Fe concentration in young leaves ###
+## 8.3.1 Statistic analysis ##
 AvailableFe_aov<-aov(data=NormalPotPeanutFe,AvailableFe~System+Days+Days*System)
 summary(AvailableFe_aov)
 
-#### 7.3.2 Plots ####
+## 8.3.2 Plots ##
 Pot_NormalPotPeanut_AvailableFe_line<-ggplot(NormalPotPeanutFe, aes(x=Days, y=AvailableFe, fill=SystemSpecies,group=SystemSpecies)) +
   stat_summary(fun.data="mean_cl_boot", geom="ribbon",
                alpha=I(.2)) +
@@ -167,8 +177,8 @@ ggsave("Pot_NormalPotPeanut_AvailableFe_line.pdf",
        Pot_NormalPotPeanut_AvailableFe_line,
        device=cairo_pdf,width=44,height=44,dpi = 300,units = "mm")
 
-#### 8. Fig. 1F-Peanut-sterilization-biomass####
-#### 8.1 Import and process data ####
+#### 9. Fig. 1f-Peanut-sterilization-biomass####
+### 9.1 Import and process data ###
 setwd(wdImport)
 PotSterilization<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                                     sheet = "Fig 1F")
@@ -177,10 +187,10 @@ PotSterilizationBiomass<-na.omit(PotSterilizationBiomass)
 PotSterilizationBiomass$SoilTreatment <-factor(PotSterilizationBiomass$SoilTreatment,level=c("Sterilization","Normal"))
 PotSterilizationBiomass$System <-factor(PotSterilizationBiomass$System,level=c("MP","IP"))
 
-#### 8.2 Statistic analysis####
+### 9.2 Statistic analysis ###
 compare_means(data=PotSterilizationBiomass,Biomass~Treatment,method = "t.test")
 
-#### 8.3 Plots ####
+### 9.3 Plots ###
 Pot_Sterilizatiion_Bimass_Bar<-ggplot(PotSterilizationBiomass,aes(x=SoilTreatment,y=Biomass,color=System,group=System))+
   stat_summary(fun=mean, geom='bar',fill="white",width=.5,position = position_dodge(0.6),size=0.12)+
   stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.12)+
@@ -195,8 +205,8 @@ getwd()
 ggsave(paste("Pot_Sterilizatiion_Bimass_Bar",".pdf",sep=""),
        Pot_Sterilizatiion_Bimass_Bar,device=cairo_pdf,width=45,height=40,dpi = 300,units = "mm")
 
-#### 9. Fig. 1F-Peanut-sterilization-YL-SPAD####
-#### 9.1 Import and process data ####
+#### 10. Fig. 1f-Peanut-sterilization-YL-SPAD####
+### 10.1 Import and process data ###
 setwd(wdImport)
 PotSterilization<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                               sheet = "Fig 1F")
@@ -205,10 +215,10 @@ PotSterilizationSPAD<-na.omit(PotSterilizationSPAD)
 PotSterilizationSPAD$SoilTreatment <-factor(PotSterilizationSPAD$SoilTreatment,level=c("Sterilization","Normal"))
 PotSterilizationSPAD$System <-factor(PotSterilizationSPAD$System,level=c("MP","IP"))
 
-#### 9.2 Statistic analysis####
+### 10.2 Statistic analysis ###
 compare_means(data=PotSterilizationSPAD,YL_SPAD~Treatment,method = "t.test")
 
-#### 9.3 Plots ####
+### 10.3 Plots ###
 Pot_Sterilizatiion_YL_SPAD_Bar<-ggplot(PotSterilizationSPAD,aes(x=SoilTreatment,y=YL_SPAD,color=System,group=System))+
   stat_summary(fun=mean, geom='bar',fill="white",width=.5,position = position_dodge(0.6),size=0.12)+
   stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.12)+
@@ -223,8 +233,8 @@ getwd()
 ggsave(paste("Pot_Sterilizatiion_YL_SPAD_Bar",".pdf",sep=""),
        Pot_Sterilizatiion_YL_SPAD_Bar,device=cairo_pdf,width=45,height=40,dpi = 300,units = "mm")
 
-#### 10. Fig. 1F-Peanut-sterilization-YL-ActiveFe####
-#### 10.1 Import and process data ####
+#### 11. Fig. 1F-Peanut-sterilization-YL-ActiveFe ####
+### 11.1 Import and process data ###
 setwd(wdImport)
 PotSterilization<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                               sheet = "Fig 1F")
@@ -233,10 +243,10 @@ PotSterilizationActiveFe<-na.omit(PotSterilizationActiveFe)
 PotSterilizationActiveFe$SoilTreatment <-factor(PotSterilizationActiveFe$SoilTreatment,level=c("Sterilization","Normal"))
 PotSterilizationActiveFe$System <-factor(PotSterilizationActiveFe$System,level=c("MP","IP"))
 
-#### 10.2 Statistic analysis####
+### 11.2 Statistic analysis ###
 compare_means(data=PotSterilizationActiveFe,YL_ActiveFe~Treatment,method = "t.test")
 
-#### 10.3 Plots ####
+### 11.3 Plots ###
 Pot_Sterilizatiion_YL_ActiveFe_Bar<-ggplot(PotSterilizationActiveFe,aes(x=SoilTreatment,y=YL_ActiveFe,color=System,group=System))+
   stat_summary(fun=mean, geom='bar',fill="white",width=.5,position = position_dodge(0.6),size=0.12)+
   stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.12)+
