@@ -48,42 +48,64 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
                               axis.line = element_line(color = "#4D4D4D",size=0.2),
                               axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
 
-wdImport<-("E:/Study/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
-wdOutput <- ("E:/Study/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/Top10drivers_MPvsIP")
+wdImport<-("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
+wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/divers_IPvsMP")
 
-
-#### 3. Heatmap_Top10_MPvsIP####
-### 3.1 Import and process data ###
+#### 3 Import and process data ####
 setwd(wdImport)
 getwd()
-Top10drivers_MPvsIP <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                           sheet = "fig s4")
-Top10drivers_MPvsIP_mean<-Top10drivers_MPvsIP%>%group_by(SystemSpeciesDays,SystemSpecies,System,Species,Days)%>%
-  summarise_at(vars(Pseudomonas:AKYG1722),funs(mean))
-Top10drivers_MPvsIP_mean<-Top10drivers_MPvsIP_mean[c(13:16,5:8,9:12,1:4),]
-Top10drivers_MPvsIP_RelativeAbundance <- Top10drivers_MPvsIP_mean[,-c(1:5)]
-Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM<-Top10drivers_MPvsIP_RelativeAbundance[c(1:12),]
-Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM_Normalization<-t(scale(Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM,center = T))
-colnames(Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM_Normalization)<-Top10drivers_MPvsIP_mean$SystemSpeciesDays[c(1:12)]
-View(Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM_Normalization)
+NetShift <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                             sheet = "fig s6a")
+
+drivers_IPvsMP <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                           sheet = "fig s6b")
+
+#### 4 ####
+### 4.1 NetShift ###
+### 4.1.1 processing data ####
+NetShift<-NetShift[order(-NetShift$DelBet,-NetShift$NESH_score),]
+NetShift_IP<-filter(NetShift,DelBet>0)
+NetShift_IP<-NetShift_IP[order(NetShift_IP$NESH_score,decreasing = T),]
+NetShift_IP$Genus<-factor(NetShift_IP$Genus,levels=NetShift_IP$Genus)
+write.table(NetShift_IP, paste("NetShift_IP",".csv",sep=""), row.names=T,sep = '\t', quote = FALSE)
+### 4.1.1 plots ###
+NetShift_IP_lollipop<-ggplot(NetShift_IP, aes(Genus, NESH_score)) +
+  geom_segment( aes(x=Genus, xend=Genus, y=0, yend=NESH_score), color="black",size=0.3) +
+  geom_point( color="black", size=1)+
+  mytheme1+theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5))
+NetShift_IP_lollipop
+setwd(wdOutput)
+getwd()
+ggsave(paste("NetShift_IP_lollipop",".pdf",sep=""),
+       NetShift_IP_lollipop,device=cairo_pdf,width=110,height=60,dpi = 600,units = "mm")
+
+
+drivers_IPvsMP_mean<-drivers_IPvsMP%>%group_by(SystemSpeciesDays,SystemSpecies,System,Species,Days)%>%
+  summarise_at(vars(unclassified_f__Nocardioidaceae:uncultured_p__Armatimonadota),funs(mean))
+drivers_IPvsMP_mean<-drivers_IPvsMP_mean[c(13:16,5:8,9:12,1:4),]
+drivers_IPvsMP_RelativeAbundance <- drivers_IPvsMP_mean[,-c(1:5)]
+drivers_IPvsMP_RelativeAbundance_MP_IP_MM<-drivers_IPvsMP_RelativeAbundance[c(1:12),]
+drivers_IPvsMP_RelativeAbundance_MP_IP_MM_Normalization<-t(scale(drivers_IPvsMP_RelativeAbundance_MP_IP_MM,center = T))
+colnames(drivers_IPvsMP_RelativeAbundance_MP_IP_MM_Normalization)<-drivers_IPvsMP_mean$SystemSpeciesDays[c(1:12)]
+View(drivers_IPvsMP_RelativeAbundance_MP_IP_MM_Normalization)
 ### 4.2 Complexheatmap ###
 ## 4.2.1 color plate ##
-max(Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM_Normalization)
-min(Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM_Normalization)
+max(drivers_IPvsMP_RelativeAbundance_MP_IP_MM_Normalization)
+min(drivers_IPvsMP_RelativeAbundance_MP_IP_MM_Normalization)
 col_fun = circlize::colorRamp2(c(-2, 0, 3), c("#2166ac", "white", "#b2182b"))
 col_fun(seq(-3, 3))
 ## 4.2.2 split ##
 column_split_order<-c(rep("MP",4),rep("IP",4),rep("MM",4))
 column_split_order<-factor(column_split_order, levels = c("IP","MP","MM"))
 ## 4.2.3 annotation ##
-Top10drivers_MPvsIP_IP <-filter(Top10drivers_MPvsIP,SystemSpecies=="IP")
-Top10drivers_MPvsIP_IP_value <-Top10drivers_MPvsIP_IP[,-c(1:13)]
-Top10drivers_MPvsIP_IP_value<-t(Top10drivers_MPvsIP_IP_value)
-ha = rowAnnotation(RA_mean = anno_boxplot(Top10drivers_MPvsIP_IP_value,height = unit(4, "cm"),
+drivers_IPvsMP_IP <-filter(drivers_IPvsMP,SystemSpecies=="IP")
+drivers_IPvsMP_IP_value <-drivers_IPvsMP_IP[,-c(1:13)]
+drivers_IPvsMP_IP_value<-t(drivers_IPvsMP_IP_value)
+ha = rowAnnotation(RA_mean = anno_boxplot(drivers_IPvsMP_IP_value,height = unit(4, "cm"),
                                           box_width = 0.5))
 ha
 ## 4.2.4 plots ##
-Heatmap(Top10drivers_MPvsIP_RelativeAbundance_MP_IP_MM_Normalization,col = col_fun,
+Heatmap(drivers_IPvsMP_RelativeAbundance_MP_IP_MM_Normalization,col = col_fun,
            cluster_columns = F,column_split = column_split_order,
            name="Relative abundance",row_km = 4,row_gap = unit(c(2,2,2), "mm"),
            column_title_gp = gpar(fill = c("#E31A1C", "#1F78B4", "#A6CEE3")),
@@ -97,44 +119,48 @@ setwd(wdOutput)
 ### 4.1 Import and process data ###
 setwd(wdImport)
 getwd()
-Top10drivers_MPvsIP <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                              sheet = "fig s6")
-Top10drivers_MPvsIP_peanut<-filter(Top10drivers_MPvsIP,Species=="Peanut")
+drivers_IPvsMP <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                              sheet = "fig s6b")
+drivers_IPvsMP_peanut<-filter(drivers_IPvsMP,Species=="Peanut")
 
 ## 5.2 correlationship anlaysis ##
-Top10drivers_MPvsIP_peanut_activeFe_cor<-corr.test(Top10drivers_MPvsIP_peanut$YLActiveFe,Top10drivers_MPvsIP_peanut[,14:length(Top10drivers_MPvsIP_peanut[1,])],
+drivers_IPvsMP_peanut_activeFe_cor<-corr.test(drivers_IPvsMP_peanut$YLActiveFe,drivers_IPvsMP_peanut[,14:length(drivers_IPvsMP_peanut[1,])],
                               method="spearman",adjust="BH",minlength=5)
-Top10drivers_MPvsIP_peanut_activeFe_cor$r
-Top10drivers_MPvsIP_peanut_activeFe_cor$p
-Top10drivers_MPvsIP_peanut_AvailableFe_cor<-corr.test(Top10drivers_MPvsIP_peanut$AvailableFe,Top10drivers_MPvsIP_peanut[,14:length(Top10drivers_MPvsIP_peanut[1,])],
+drivers_IPvsMP_peanut_activeFe_cor$r
+drivers_IPvsMP_peanut_activeFe_cor$p
+drivers_IPvsMP_peanut_AvailableFe_cor<-corr.test(drivers_IPvsMP_peanut$AvailableFe,drivers_IPvsMP_peanut[,14:length(drivers_IPvsMP_peanut[1,])],
                                                   method="spearman",adjust="BH",minlength=5)
-Top10drivers_MPvsIP_peanut_AvailableFe_cor$r
-Top10drivers_MPvsIP_peanut_AvailableFe_cor$p
+drivers_IPvsMP_peanut_AvailableFe_cor$r
+drivers_IPvsMP_peanut_AvailableFe_cor$p
 
-Top10drivers_MPvsIP_peanut_cor_results<-as.data.frame(t(rbind(Top10drivers_MPvsIP_peanut_activeFe_cor$r,
-                                                          Top10drivers_MPvsIP_peanut_activeFe_cor$p,
-                                                          Top10drivers_MPvsIP_peanut_AvailableFe_cor$r,
-                                                          Top10drivers_MPvsIP_peanut_AvailableFe_cor$p)))
-colnames(Top10drivers_MPvsIP_peanut_cor_results)<-c("activeFe_r","activeFe_p_value","avaliableFe_r","availableFe_p_value")
-Top10drivers_MPvsIP_peanut_cor_results$Genus<-row.names(Top10drivers_MPvsIP_peanut_cor_results)
-Top10drivers_MPvsIP_peanut_cor_r<-as.data.frame(t(rbind(Top10drivers_MPvsIP_peanut_activeFe_cor$r,
-                                                      Top10drivers_MPvsIP_peanut_AvailableFe_cor$r)))
-colnames(Top10drivers_MPvsIP_peanut_cor_r)<-c("activeFe_r","avaliableFe_r")
+drivers_IPvsMP_peanut_cor_results<-as.data.frame(t(rbind(drivers_IPvsMP_peanut_activeFe_cor$r,
+                                                          drivers_IPvsMP_peanut_activeFe_cor$p,
+                                                          drivers_IPvsMP_peanut_AvailableFe_cor$r,
+                                                          drivers_IPvsMP_peanut_AvailableFe_cor$p)))
+colnames(drivers_IPvsMP_peanut_cor_results)<-c("activeFe_r","activeFe_p_value","avaliableFe_r","availableFe_p_value")
+drivers_IPvsMP_peanut_cor_results$Genus<-row.names(drivers_IPvsMP_peanut_cor_results)
+drivers_IPvsMP_peanut_cor_r<-as.data.frame(t(rbind(drivers_IPvsMP_peanut_activeFe_cor$r,
+                                                      drivers_IPvsMP_peanut_AvailableFe_cor$r)))
+colnames(drivers_IPvsMP_peanut_cor_r)<-c("activeFe_r","avaliableFe_r")
 ### 5.3. Complexheatmap ###
 ## 5.3.1 color plate ##
-max(Top10drivers_MPvsIP_peanut_cor_r)
-min(Top10drivers_MPvsIP_peanut_cor_r)
+max(drivers_IPvsMP_peanut_cor_r)
+min(drivers_IPvsMP_peanut_cor_r)
 col_cor = circlize::colorRamp2(c(-0.8, 0, 0.8), c("#4d9221", "white", "#c51b7d"))
 ## 5.3.2 split ##
-row_order_setting<-c("Pseudomonas","Aeromicrobium","Solirubrobacter","Iamia","unclassified_f__Nocardioidaceae","Subgroup_7",
-                     "Pontibacter","Microbacterium","Noviherbaspirillum","AKYG1722")
+row_order_setting<-c("Adhaeribacter","Geodermatophilus","67-14","uncultured_o__Ardenticatenales","AKYG1722","Sphingomonas","Nocardioides","Aeromicrobium",
+                     "uncultured_f__Blastocatellaceae","unclassified_f__Blastocatellaceae","Luteitalea","uncultured_p__Armatimonadota","Iamia","IMCC26256",
+                     "RB41","Subgroup_7","unclassified_f__Nocardioidaceae","Microbacterium","unclassified_o__Gaiellales","CCD24","uncultured_f__Gemmatimonadaceae",
+                     "bacteriap25","MND1","Noviherbaspirillum","unclassified_f__Xanthomonadaceae","unclassified_f__Planococcaceae","Paenibacillus","Paenisporosarcina",
+                     "Pseudomonas")
 row_order_setting
-Top10drivers_MPvsIP_peanut_cor_r
+drivers_IPvsMP_peanut_cor_r
 length(row_order_setting)
 
 # 5.3.3 plots #
-Heatmap(Top10drivers_MPvsIP_peanut_cor_r,col = col_cor,
+Heatmap(drivers_IPvsMP_peanut_cor_r,col = col_cor,
         cluster_columns = F,cluster_rows = F,row_order = row_order_setting)
-setwd(wdOutput_Figure3)
+setwd(wdOutput)
+
 
 #saving as width*hight 7*4

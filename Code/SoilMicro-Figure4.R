@@ -1,4 +1,4 @@
-#### 1. loading required libraries ####
+#### 1. Loading packet####
 library(ggplot2)#作图 plot
 library(ggpubr)#添加显著性标记, Add the significance marker
 library(ggsignif)#添加显著性标记, Add the significance marker
@@ -6,199 +6,528 @@ library(dplyr)#数据清洗，Data cleaning
 library(plyr)#数据清洗，Data cleaning
 library(reshape2)#数据清洗，Data cleaning
 library(ggthemes)#ggplot所用主题，Themes for ggplot2
-library(ggsci)#TOP期刊配色方案, color plates from top journal
+library(grid)#分面和嵌合图，facet and Mosaic graph
+library(agricolae)#多重比较，Multiple comparisons.
 library(readxl)#读入 excel, read excel
+library(ggsci)#配色，color scheme
 library(showtext)#字体设置, font setting
+library(car)#方差齐性检验，homogeneity test of variance, levene test
 library(extrafont)#使用系统字体，Using the system fonts
 library(sysfonts)#加载系统字体，loading the system fonts
 library(Cairo)#抗锯齿,anti-aliasing
-library(ggtree)
-library(rcompanion)#nonparametric two ways test
-library(psych)#correlation analysis
+library(stringr)#字符串处理.string manipulation
+library(graphics)#坐标轴表达式，expression for axis
+library(vegan)
+library(data.table)
 
-#### 2. Setting themes and working dictionary path ####
+#### 2. setting theme and filepath ####
 loadfonts()
 Sys.setenv(R_GSCMD = "C:/Program Files (x86)/gs/gs9.50/bin/gswin32c.exe")
 
-mytheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d"),
+mytheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#000000"),
                              text = element_text(family = "Arial"),
-                             strip.text = element_text(size = 6,hjust = 0.5),
-                             plot.title = element_text(size = 6,hjust = 0.5),
-                             axis.text=element_text(size=6,color = "#4D4D4D"),
-                             axis.title=element_text(size = 6),
-                             legend.text = element_text(size = 6),
-                             legend.title = element_text(size = 6),
+                             strip.text = element_text(size=7,hjust = 0.5),
+                             plot.title = element_text(size=7,hjust = 0.5),
+                             axis.text=element_text(size=7,color = "#808080"),
+                             axis.title=element_text(size=7),
+                             legend.text = element_text(size=7),
+                             legend.title = element_text(size=7),
                              legend.background = element_blank(),
                              panel.border = element_rect(colour = NA),
-                             axis.line = element_line(color = "#4D4D4D",size=0.2),
-                             axis.ticks.length = unit(0.8, "mm"))
+                             axis.line = element_line(color = "black",size=0.4))#移除整体的边???
 
-mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",size=0.2),
-                              panel.background = element_rect(colour = "#4d4d4d",size=0.2),
-                              text = element_text(family = "Arial"),
-                              strip.text = element_text(size = 5,hjust = 0.5),
-                              plot.title = element_text(size = 5,hjust = 0.5),
-                              axis.text=element_text(size=5,color = "#4D4D4D"),
-                              axis.title=element_text(size = 5),
-                              legend.text = element_text(size = 5),
-                              legend.title = element_text(size = 5),
-                              legend.background = element_blank(),
-                              axis.line = element_line(color = "#4D4D4D",size=0.2),
-                              axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
+FacetTheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#000000"),
+                                text = element_text(family = "Arial"),
+                                strip.text = element_text(size=8,hjust = 0.5),
+                                plot.title = element_text(size=8,hjust = 0.5),
+                                axis.text =element_text(size=8,color = "black"),
+                                axis.title =element_text(size=8,color = "black"),
+                                legend.text = element_text(size=8,color = "black"),
+                                legend.title = element_text(size=8,color = "black"),
+                                legend.background = element_blank(),
+                                axis.line = element_line(color = "black",size=0.4))#移除整体的边???
+wdImport<- c("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
+wdOutput_Figure4 <- c("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Figure4")
 
-wdImport<-("E:/Study/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
-wdOutput_Figure4 <- ("E:/Study/SCI/Soil Micro/SCI/Figures/Figures from R/Figure4")
-
-#### 3. Fig. 4b-phylogenetic tree####
-## 3.1 Import and process data ##
+#### 3. Peanut-Pot and field ####
+#### 3.1 Import and process data ####
 setwd(wdImport)
-Rooted_tree_46Strains <- read.tree("Rooted_tree_46Strains_16s_sequence.nwk")
-Rooted_tree_46Strains_Tib <-as_tibble(Rooted_tree_46Strains)
-class(Rooted_tree_46Strains)
-StrainScreeningName <- read_excel("Intercropping-microbiome-Data for submit.xlsx",sheet="fig 4b name")
+SterilePotSPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                             sheet = "fig 4b SPAD in pot")
+SterilePotSPAD$Treatment3<-factor(SterilePotSPAD$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
-## 3.2 getting Node parameters ##
-Rooted_tree_46Strains_Node<-ggtree(Rooted_tree_46Strains,branch.length="none")+geom_text2(aes(subset=!isTip,label=node),hjust=-0.3)+
-  geom_tiplab()
-Rooted_tree_46Strains_Node
-viewClade(Rooted_tree_46Strains_Node,node=66)##node66是Pseudomonas和其他分开的节点
+SterilePot_ActiveFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                                  sheet = "fig 4b activeFe in pot")
+SterilePot_ActiveFe$Treatment3<-factor(SterilePot_ActiveFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 
-## 3.3 Visualizing Phylogenetic Tree ##
-Pse<-StrainScreeningName%>%filter(Genus=="Pseudomonas")
-Bac<-StrainScreeningName%>%filter(Genus=="Bacillus")
-Ach <-StrainScreeningName%>%filter(Genus=="Achromobacter")
-Rhi <-StrainScreeningName%>%filter(Genus=="Rhizobium")
-Ent <-StrainScreeningName%>%filter(Genus=="Enterobacter")
-Ste <-StrainScreeningName%>%filter(Genus=="Stenotrophomonas")
+SterilePot_AvailableFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                                  sheet = "fig 4b availableFe in pot")
+SterilePot_AvailableFe$Treatment3<-factor(SterilePot_AvailableFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
-Genus_Group <- list(Pseudomonas=Pse$Name,Bacillus=Bac$Name,
-                    Achromobacter=Ach$Name,Rhizobium=Rhi$Name,
-                    Enterobacter=Ent$Name,Stenotrophomonas=Ste$Name)
-Genus_Group
-Clade_Group<-as_tibble(Rooted_tree_46Strains) %>% groupOTU(Genus_Group)
-Clade_Group
-Tree_46Strains_LineGroup<-ggtree(Rooted_tree_46Strains, branch.length="none")%>%
-  groupOTU(Genus_Group,'Genus')+
-  aes(color=Genus)+ylim(NA,7)+
-  geom_tiplab(as_ylab=TRUE,align=TRUE)+
-  theme(legend.position=c(0.2,0.85))+
-  scale_color_manual(values=c("black","#00A087","#3C5488","#4DBBD5","#E64B35","#F39B7F","#7E6148"))
-Tree_46Strains_LineGroup
+
+Field_SPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                         sheet = "fig 4d SPAD in field") 
+Field_SPAD$Treatment<-factor(Field_SPAD$Treatment,levels=c("CK","1502IPR-01","Pyoverdine","EDTA-Fe"))
+
+
+Field_Iron <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                         sheet = "fig 4d iron in field")
+Field_Iron$Treatment<-factor(Field_Iron$Treatment,levels=c("CK","1502IPR-01","Pyoverdine","EDTA-Fe"))
+
+Field_Yield <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                          sheet = "fig 4d yield in field")
+Field_Yield$Treatment<-factor(Field_Yield$Treatment,levels=c("CK","1502IPR-01","Pyoverdine","EDTA-Fe"))
+
+#### 4 SIP ####
+## 4.1 SIP-SPAD ###
+SIP_SPAD<-SterilePotSPAD%>%filter(Treatment2=="SIP")
+# 4.1.1 statistical analysis #
+compare_means(data=SIP_SPAD,YL_SPAD~Treatment3,method = "t.test")
+aov_model_SIP_SPAD<-aov(data=SIP_SPAD,YL_SPAD~Treatment3)
+summary(aov_model_SIP_SPAD)
+duncan_model_SIP_SPAD<- duncan.test(aov_model_SIP_SPAD,"Treatment3")
+duncan_model_SIP_SPAD
+
+# 4.1.2 Plots #
+SIP_SPAD_Bar<-ggplot(SIP_SPAD,aes(Treatment3,YL_SPAD))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",y='SPAD')+
+  scale_y_continuous(limits = c(0,40))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+SIP_SPAD_Bar
 setwd(wdOutput_Figure4)
-ggsave("Tree_46Strains_LineGroup.pdf",Tree_46Strains_LineGroup,device=cairo_pdf,width=140,height=140,dpi = 300,units = "mm")
-Tree_46Strains<-ggtree(Rooted_tree_46Strains, branch.length="none")+ geom_tiplab(align=TRUE)
-Tree_46Strains
+getwd()
+ggsave(paste("SIP_SPAD_Bar",".pdf",sep=""),
+       SIP_SPAD_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
 
-## 3.4 Mapping data to the tree structure ##
-setwd(wdImport)
-SiderophoreProduction <- read_excel("StrainScreening.xlsx",sheet="SiderophoreProduction")
-SiderophoreProductionStat <-SiderophoreProduction%>%
-  group_by(GroupID,label,Genus)%>%
-  summarise_at("SiderophoreProductionValue",funs(mean,sd))
-SiderophoreProductionStat
-Sid_Stat<-data.frame(label=SiderophoreProductionStat$label,
-                     value=SiderophoreProductionStat$mean)
-Sid_Stat
-class(Sid_Stat$label)
-library(ggstance)
-SiderophoreProduction_Bar <- ggplot(SiderophoreProductionStat, aes(mean,label))+
-  scale_x_continuous(expand = c(0,0),breaks=c(0,20,40))+theme_tree2()+
-  geom_errorbar(aes(xmin=mean-sd,
-                    xmax=mean+sd),width=0.2)+geom_colh(fill="#CBCBCB")
-SiderophoreProduction_Bar
-## 3.5 Composite plots ##
-library(aplot)
-Rooted_tree_46Strains_Tib
-Tree_46Strains_LineGroup
-SiderophoreProduction_Bar
-Tree_46Strains
-Composite_plots_46Strains<-SiderophoreProduction_Bar %>% insert_left(Tree_46Strains_LineGroup,width=6)
-Composite_plots_46Strains
-setwd(wdOutput_Figure4)
-ggsave("Composite_plots_46Strains.pdf",Composite_plots_46Strains,device=cairo_pdf,width=140,height=140,dpi = 300,units = "mm")
-wdOutput
+## 4.2. SIP-Acitve Fe ###
+SIP_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="SIP")
+SIP_ActiveFe
+# 4.2.1 statistical analysis #
+compare_means(data=SIP_ActiveFe,YL_ActiveFe~Treatment3,method = "t.test")
+aov_model_SIP_ActiveFe<-aov(data=SIP_ActiveFe,YL_ActiveFe~Treatment3)
+summary(aov_model_SIP_ActiveFe)
+duncan_result_SIP_ActiveFe<- duncan.test(aov_model_SIP_ActiveFe,"Treatment3")
+duncan_result_SIP_ActiveFe
 
-####4. Maize-ASV593-Percent-Pot2020####
-## 4.1 Import and process data ##
-setwd(wdImport)
-ASV593_Percent <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig 4c")
-ASV593_Percent_Maize<-subset(ASV593_Percent,Species=="Maize")
-ASV593_Percent_Maize$System<-factor(ASV593_Percent_Maize$System,levels=c("Intercropping","Monocropping"))
-## 4.2 two way Scheirer-Ray-Hare test ##
-
-scheirerRayHare(Percent~System+Days+Days:System, data = ASV593_Percent_Maize)
-
-## 4.3 ASV593 Percent plots ##
-ASV593_Percent_Maize_Pots<-ggplot(ASV593_Percent_Maize, aes(x=Days, y=Percent, fill=System,group=System)) +
-  stat_summary(fun.data="mean_cl_boot", geom="ribbon",size=0,
-               alpha=I(.1))+
-  stat_summary(fun.data="mean_cl_boot", geom="line",size=1,aes(color=System))+
-  geom_point(aes(x=Days,y=Percent,color=System,group=System),size=0.25)+
+# 4.2.2 statistical analysis #
+SIP_YL_ActiveFe_Bar<-ggplot(SIP_ActiveFe,aes(Treatment3,YL_ActiveFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",
-       y="relative abundance(%)",parse =T)+
-  scale_y_continuous(limits = c(0,0.8))+
-  scale_x_continuous(breaks = c(46,53,63,73))+
-  scale_color_manual(values = c("#E64B35","#4DBBD5"))+
-  scale_fill_manual(values = c("#E64B35","#4DBBD5"))+
-  mytheme1
-
-ASV593_Percent_Maize_Pots
+       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_y_continuous(limits = c(0,7))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+SIP_YL_ActiveFe_Bar
 setwd(wdOutput_Figure4)
-ggsave(paste("ASV593_Percent_Maize_Pots",".pdf",sep=""),ASV593_Percent_Maize_Pots,device=cairo_pdf,width=80,height=40,dpi = 300,units = "mm")
-
-#### 5. Peanut-ASV593-Percent-Pot2020 ####
-## 5.1 Import and process data ##
-setwd(wdImport)
 getwd()
-ASV593_Percent <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig 4c")
-ASV593_Percent_Peanut<-subset(ASV593_Percent,Species=="Peanut")
-ASV593_Percent_Peanut$System<-factor(ASV593_Percent_Peanut$System,levels=c("Intercropping","Monocropping"))
+ggsave(paste("SIP_YL_ActiveFe_Bar",".pdf",sep=""),
+       SIP_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
 
-## 5.2 two way Scheirer-Ray-Hare test ##
-scheirerRayHare(Percent~System+Days+Days:System, data = ASV593_Percent_Peanut)
+## 4.3 SIP-AvailableFe ###
+SIP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="SIP")
+# 4.3.1 statistical analysis #
+compare_means(data=SIP_AvailableFe,availableFe~Treatment3,method = "t.test")
+aov_model_SIP_AvailableFe<-aov(data=SIP_AvailableFe,availableFe~Treatment3)
+summary(aov_model_SIP_AvailableFe)
+duncan_model_SIP_AvailableFe<- duncan.test(aov_model_SIP_AvailableFe,"Treatment3")
+duncan_model_SIP_AvailableFe
 
-## 5.3 ASV593 Percent Peanut Plots ##
-
-ASV593_Percent_Peanut_Pots<-ggplot(ASV593_Percent_Peanut, aes(x=Days, y=Percent, fill=System,group=System)) +
-  stat_summary(fun.data="mean_cl_boot", geom="ribbon",size=0,
-               alpha=I(.1))+
-  stat_summary(fun.data="mean_cl_boot", geom="line",size=1,aes(color=System))+
-  geom_point(aes(x=Days,y=Percent,color=System,group=System),size=0.25)+
+# 4.3.2 Plots #
+SIP_AvailableFe_Bar<-ggplot(SIP_AvailableFe,aes(Treatment3,availableFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",
-       y="relative abundance(%)",parse =T)+
-  scale_y_continuous(limits = c(0,0.15))+
-  scale_x_continuous(breaks = c(46,53,63,73))+
-  scale_color_manual(values = c("#E64B35","#4DBBD5"))+
-  scale_fill_manual(values = c("#E64B35","#4DBBD5"))+
-  mytheme1
-
-ASV593_Percent_Peanut_Pots
-setwd(wdOutput_Figure4)
-ggsave(paste("ASV593_Percent_Peanut_Pots",".pdf",sep=""),ASV593_Percent_Peanut_Pots,device=cairo_pdf,width=80,height=40,dpi = 300,units = "mm")
-
-#### 6. Pyovdine solublize Fe ####
-## 6.1 Import and process data ##
-setwd(wdImport)
-getwd()
-Solubilize_Fe<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig 4f")
-
-
-## 6.2 correlationship anlaysis ##
-Solubilize_Fe_pyoverdine_Fe<-corr.test(Solubilize_Fe$Additon_sid_nmol,Solubilize_Fe$Iron_content_nmol,
-                                               method="spearman",adjust="BH",minlength=5)
-Solubilize_Fe_pyoverdine_Fe
-Solubilize_Fe_pyoverdine_Fe$p
-## 6.3 Plots ##
-Solubilize_Fe_density <- ggplot(Solubilize_Fe,aes(x=Additon_sid_nmol,y=Iron_content_nmol))+
-  geom_point(color="#33a02c")+
-  geom_density2d(color="#6a3d9a")+stat_smooth(method = lm,color="#6a3d9a")+
-  mytheme1
-Solubilize_Fe_density
+       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_y_continuous(limits = c(0,8))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+SIP_AvailableFe_Bar
 setwd(wdOutput_Figure4)
 getwd()
-ggsave(paste("Solubilize_Fe_density",".pdf",sep=""),
-       Solubilize_Fe_density,device=cairo_pdf,width=120,height=40,dpi = 300,units = "mm")
+ggsave(paste("SIP_AvailableFe_Bar",".pdf",sep=""),
+       SIP_AvailableFe_Bar,device=cairo_pdf,width=50,height=59,dpi = 300,units = "mm")
+
+#### 5 SMP ####
+## 5.2.1 SMP-SPAD ###
+SMP_SPAD<-SterilePotSPAD%>%filter(Treatment2=="SMP")
+# 5.2.1.1 statistical analysis #
+shapiro.test(SMP_SPAD$YL_SPAD)#normal test
+compare_means(data=SMP_SPAD,YL_SPAD~Treatment3,method = "t.test")
+aov_model_SMP_SPAD<-aov(data=SMP_SPAD,YL_SPAD~Treatment3)
+summary(aov_model_SMP_SPAD)
+duncan_result_SMP_SPAD<- duncan.test(aov_model_SMP_SPAD,"Treatment3")
+duncan_result_SMP_SPAD
+
+
+# 5.2.1.2 Plots #
+SMP_SPAD_Bar<-ggplot(SMP_SPAD,aes(Treatment3,YL_SPAD))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",y='SPAD')+
+  scale_y_continuous(limits = c(0,50))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+SMP_SPAD_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("SMP_SPAD_Bar",".pdf",sep=""),
+       SMP_SPAD_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
+
+## 5.2.2 SMP-Acitve Fe ###
+SMP_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="SMP")
+# 5.2.2.1 statistical analysis #
+compare_means(data=SMP_ActiveFe,YL_ActiveFe~Treatment3,method = "t.test")
+aov_model_SMP_ActiveFe<-aov(data=SMP_ActiveFe,YL_ActiveFe~Treatment3)
+summary(aov_model_SMP_ActiveFe)
+duncan_result_SMP_ActiveFe<- duncan.test(aov_model_SMP_ActiveFe,"Treatment3")
+duncan_result_SMP_ActiveFe
+
+
+# 5.2.2.2 statistical analysis #
+SMP_YL_ActiveFe_Bar<-ggplot(SMP_ActiveFe,aes(Treatment3,YL_ActiveFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",
+       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_y_continuous(limits = c(0,7))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+SMP_YL_ActiveFe_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("SMP_YL_ActiveFe_Bar",".pdf",sep=""),
+       SMP_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
+
+## 5.3 SMP-AvailableFe ###
+SMP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="SMP")
+# 5.3.1 statistical analysis #
+compare_means(data=SMP_AvailableFe,availableFe~Treatment3,method = "t.test")
+aov_model_SMP_AvailableFe<-aov(data=SMP_AvailableFe,availableFe~Treatment3)
+summary(aov_model_SMP_AvailableFe)
+duncan_model_SMP_AvailableFe<- duncan.test(aov_model_SMP_AvailableFe,"Treatment3")
+duncan_model_SMP_AvailableFe
+
+# 5.3.2 Plots #
+SMP_AvailableFe_Bar<-ggplot(SMP_AvailableFe,aes(Treatment3,availableFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",
+       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_y_continuous(limits = c(0,8))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+SMP_AvailableFe_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("SMP_AvailableFe_Bar",".pdf",sep=""),
+       SMP_AvailableFe_Bar,device=cairo_pdf,width=50,height=62,dpi = 300,units = "mm")
+
+#### 6 NMP ####
+## 6.1 NMP-SPAD ###
+NMP_SPAD<-SterilePotSPAD%>%filter(Treatment2=="NMP")
+# 6.1.1 statistical analysis #
+compare_means(data=NMP_SPAD,YL_SPAD~Treatment3,method = "t.test")
+aov_model_NMP_SPAD<-aov(data=NMP_SPAD,YL_SPAD~Treatment3)
+summary(aov_model_NMP_SPAD)
+duncan_result_NMP_SPAD<- duncan.test(aov_model_SMP_SPAD,"Treatment3")
+duncan_result_NMP_SPAD
+
+# 6.1.2 Plots #
+NMP_SPAD_Bar<-ggplot(NMP_SPAD,aes(Treatment3,YL_SPAD))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",y='SPAD')+
+  scale_y_continuous(limits = c(0,40))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+NMP_SPAD_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("NMP_SPAD_Bar",".pdf",sep=""),
+       NMP_SPAD_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
+
+## 6.2 NMP-Acitve Fe ###
+NMP_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="NMP")
+# 6.2.1 statistical analysis #
+compare_means(data=NMP_ActiveFe,YL_ActiveFe~Treatment3,method = "t.test")
+aov_model_NMP_ActiveFe<-aov(data=NMP_ActiveFe,YL_ActiveFe~Treatment3)
+summary(aov_model_NMP_ActiveFe)
+duncan_result_NMP_ActiveFe<- duncan.test(aov_model_NMP_ActiveFe,"Treatment3")
+duncan_result_NMP_ActiveFe
+
+# 6.2.2 Plots #
+NMP_YL_ActiveFe_Bar<-ggplot(NMP_ActiveFe,aes(Treatment3,YL_ActiveFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",
+       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_y_continuous(limits = c(0,7))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+NMP_YL_ActiveFe_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("NMP_YL_ActiveFe_Bar",".pdf",sep=""),
+       NMP_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
+
+## 6.3 NMP-AvailableFe ###
+NMP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="NMP")
+# 6.3.1 statistical analysis #
+compare_means(data=NMP_AvailableFe,availableFe~Treatment3,method = "t.test")
+aov_model_NMP_AvailableFe<-aov(data=NMP_AvailableFe,availableFe~Treatment3)
+summary(aov_model_NMP_AvailableFe)
+duncan_model_NMP_AvailableFe<- duncan.test(aov_model_NMP_AvailableFe,"Treatment3")
+duncan_model_NMP_AvailableFe
+
+# 6.3.2 Plots #
+NMP_AvailableFe_Bar<-ggplot(NMP_AvailableFe,aes(Treatment3,availableFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
+  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",
+       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_y_continuous(limits = c(0,8))+
+  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(color=F)
+NMP_AvailableFe_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("NMP_AvailableFe_Bar",".pdf",sep=""),
+       NMP_AvailableFe_Bar,device=cairo_pdf,width=50,height=62,dpi = 300,units = "mm")
+
+#### 7 Peanut-YL SPAD value-Field####
+### 7.1 Beijing###
+BJ_Field_SPAD<-Field_SPAD%>%filter(Position=="Beijing")
+## 7.1.1 statistical analysis##
+compare_means(data=BJ_Field_SPAD,YL_SPAD~Treatment,method = "t.test")
+aov_model_BJ_Field_SPAD<-aov(data=BJ_Field_SPAD,YL_SPAD~Treatment)
+summary(aov_model_BJ_Field_SPAD)
+duncan_result_BJ_Field_SPAD<- duncan.test(aov_model_BJ_Field_SPAD,"Treatment")
+duncan_result_BJ_Field_SPAD
+
+# 7.1.2 Plot #
+BJ_Field_SPAD_box_jitter<-ggplot(BJ_Field_SPAD,aes(Treatment,YL_SPAD))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=T,size=0.2)+
+  labs(x="",
+       y="SPAD",parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_y_continuous(limits = c(6,45))+
+  mytheme+
+  guides(color=F,fill=F)
+BJ_Field_SPAD_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("BJ_Field_SPAD_box_jitter",".pdf",sep=""),
+       BJ_Field_SPAD_box_jitter,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")
+
+### 7.2 Puyang ###
+PY_Field_SPAD<-Field_SPAD%>%filter(Position=="Puyang")
+## 6.2.1 statistical analysis##
+compare_means(data=PY_Field_SPAD,YL_SPAD~Treatment,method = "t.test")
+aov_model_PY_Field_SPAD<-aov(data=PY_Field_SPAD,YL_SPAD~Treatment)
+summary(aov_model_PY_Field_SPAD)
+duncan_result_PY_Field_SPAD<- duncan.test(aov_model_PY_Field_SPAD,"Treatment")
+duncan_result_PY_Field_SPAD
+## 6.2.2 Plot##
+PY_Field_SPAD_box_jitter<-ggplot(PY_Field_SPAD,aes(Treatment,YL_SPAD))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=T,size=0.2)+
+  labs(x="",
+       y="SPAD",parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  mytheme+
+  scale_y_continuous(limits = c(6,45))+
+  guides(color=F,fill=F)
+PY_Field_SPAD_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("PY_Field_SPAD_box_jitter",".pdf",sep=""),
+       PY_Field_SPAD_box_jitter,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")
+
+#### 8 Peanut-YL_ActiveFe-Field####
+### 8.1 Beijing ###
+BJ_Field_Iron<-Field_Iron%>%filter(Position=="Beijing")
+## 8.1.1 statistical analysis##
+compare_means(data=BJ_Field_Iron,YL_ActiveFe~Treatment,method = "t.test")
+aov_model_BJ_Field_SPAD<-aov(data=BJ_Field_Iron,YL_ActiveFe~Treatment)
+summary(aov_model_BJ_Field_SPAD)
+duncan_result_BJ_Field_SPAD<- duncan.test(aov_model_BJ_Field_SPAD,"Treatment")
+duncan_result_BJ_Field_SPAD
+## 8.1.2 Plot ##
+BJ_Field_YL_ActiveFe_box_jitter<-ggplot(BJ_Field_Iron,aes(Treatment,YL_ActiveFe))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  labs(x="",
+       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_y_continuous(limits = c(1,9),breaks = c(3,6,9))+
+  mytheme+
+  guides(color=F,fill=F)
+BJ_Field_YL_ActiveFe_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("BJ_Field_YL_ActiveFe_box_jitter",".pdf",sep=""),
+       BJ_Field_YL_ActiveFe_box_jitter,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")
+
+### 8.2 Puyang ###
+PY_Field_Iron<-Field_Iron%>%filter(Position=="Puyang")
+## 8.2.1 statistical analysis##
+compare_means(data=PY_Field_Iron,YL_ActiveFe~Treatment,method = "t.test")
+aov_model_PY_Field_ActiveFe<-aov(data=PY_Field_Iron,YL_ActiveFe~Treatment)
+summary(aov_model_PY_Field_ActiveFe)
+duncan_result_PY_Field_ActiveFe<- duncan.test(aov_model_PY_Field_ActiveFe,"Treatment")
+duncan_result_PY_Field_ActiveFe
+## 8.2.2 Plot ##
+PY_Field_YL_ActiveFe_box_jitter<-ggplot(PY_Field_Iron,aes(Treatment,YL_ActiveFe))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  labs(x="",
+       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  mytheme+
+  scale_y_continuous(limits = c(1,9),breaks = c(3,6,9))+
+  guides(color=F,fill=F)
+PY_Field_YL_ActiveFe_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("PY_Field_YL_ActiveFe_box_jitter",".pdf",sep=""),
+       PY_Field_YL_ActiveFe_box_jitter,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")
+
+#### 9 Peanut-AvailableFe-Field2020####
+### 9.1 Beijing ###
+BJ_Field_Iron<-Field_Iron[c(1:18),]
+## 9.1.1 statistical analysis##
+#样本量大于50用Kolmogorov-Smirnov检验Chao正态分布性，小于5O用shapiro-wilk检验，p值大于0.05及符合正态分布
+compare_means(data=BJ_Field_Iron,Available_Fe~Treatment,method = "t.test")
+aov_model_BJ_Field_AvailableFe<-aov(data=BJ_Field_Iron,Available_Fe~Treatment)
+summary(aov_model_BJ_Field_AvailableFe)
+duncan_result_BJ_Field_AvailableFe<- duncan.test(aov_model_BJ_Field_AvailableFe,"Treatment")
+duncan_result_BJ_Field_AvailableFe
+## 9.1.2 Plot ##
+BJ_Field_Available_Fe_box_jitter<-ggplot(BJ_Field_Iron,aes(Treatment,Available_Fe))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  labs(x="",
+       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  mytheme+
+  scale_y_continuous(limits = c(2,22),breaks = c(5,10,15))+
+  guides(color=F,fill=F)
+BJ_Field_Available_Fe_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("BJ_Field_Available_Fe_box_jitter",".pdf",sep=""),
+       BJ_Field_Available_Fe_box_jitter,device=cairo_pdf,width=35,height=60,dpi = 300,units = "mm")
+
+### 9.2 Puyang###
+PY_Field_AvailableFe<-Field_Iron[c(25:48),]
+## 9.2.1 statistical analysis ##
+compare_means(data=PY_Field_AvailableFe,Available_Fe~Treatment,method = "t.test")
+aov_model_PY_Field_AvailableFe<-aov(data=PY_Field_AvailableFe,Available_Fe~Treatment)
+summary(aov_model_PY_Field_AvailableFe)
+duncan_result_PY_Field_AvailableFe<- duncan.test(aov_model_PY_Field_AvailableFe,"Treatment")
+duncan_result_PY_Field_AvailableFe
+## 9.2.2 Plot ##
+PY_Field_Available_Fe_box_jitter<-ggplot(PY_Field_AvailableFe,aes(Treatment,Available_Fe))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  labs(x="",
+       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  mytheme+
+  scale_y_continuous(limits = c(2,22),breaks = c(5,10,15))+
+  guides(color=F,fill=F)
+PY_Field_Available_Fe_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("PY_Field_Available_Fe_box_jitter",".pdf",sep=""),
+       PY_Field_Available_Fe_box_jitter,device=cairo_pdf,width=35,height=60,dpi = 300,units = "mm")
+
+#### 10 Peanut-Yield-Field####
+### 10.1 Beijing ###
+BJ_Field_Yield<-Field_Yield%>%filter(Position=="Beijing")
+## 10.1.1 statistical analysis##
+compare_means(data=BJ_Field_Yield,YieldPerHa~Treatment,method = "t.test")
+aov_model_BJ_Field_Yield<-aov(data=BJ_Field_Yield,YieldPerHa~Treatment)
+summary(aov_model_BJ_Field_Yield)
+duncan_result_BJ_Field_Yield<- duncan.test(aov_model_BJ_Field_Yield,"Treatment")
+duncan_result_BJ_Field_Yield
+
+## 10.1.1 Plot ##
+BJ_Field_Yield_box_jitter<-ggplot(BJ_Field_Yield,aes(Treatment,YieldPerHa))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  labs(x="",
+       y=expression('The yield (t '*ha^{-1}*')'),parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  mytheme+
+  scale_y_continuous(limits = c(1.5,7),breaks = c(2,4,6))+
+  guides(color=F,fill=F)
+BJ_Field_Yield_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("BJ_Field_Yield_box_jitter",".pdf",sep=""),
+       BJ_Field_Yield_box_jitter,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")
+
+### Puyang ###
+PY_Field_Yield<-Field_Yield%>%filter(Position=="Puyang")
+compare_means(data=PY_Field_Yield,YieldPerHa~Treatment,method = "t.test")
+aov_model_PY_Field_Yield<-aov(data=PY_Field_Yield,YieldPerHa~Treatment)
+summary(aov_model_PY_Field_Yield)
+duncan_result_PY_Field_Yield<- duncan.test(aov_model_PY_Field_Yield,"Treatment")
+duncan_result_PY_Field_Yield
+#Plot#
+PY_Field_Yield_box_jitter<-ggplot(PY_Field_Yield,aes(Treatment,YieldPerHa))+
+  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
+  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  labs(x="",
+       y=expression('The yield (t '*ha^{-1}*')'),parse =T)+
+  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
+  mytheme+
+  scale_y_continuous(limits = c(1.5,5),breaks = c(2,4,6))+
+  guides(color=F,fill=F)
+PY_Field_Yield_box_jitter
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("PY_Field_Yield_box_jitter",".pdf",sep=""),
+       PY_Field_Yield_box_jitter,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")

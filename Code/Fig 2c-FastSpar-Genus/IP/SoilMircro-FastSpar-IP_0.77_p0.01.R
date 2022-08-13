@@ -1,8 +1,8 @@
 #in R
 
-wdImport <- c("E:/Study/SCI/Soil Micro/SCI/Figures/16S/QIIME2-DAD2/FourStages-DAD2-F295+R205-Filtered1/Import")
-wdImport2 <- c("E:/Study/SCI/Soil Micro/SCI/Figures/16S/QIIME2-DAD2/FourStages-DAD2-F295+R205-Filtered1/Network/FastSpar-Genus/IP")
-wdOutput <- c("E:/Study/SCI/Soil Micro/SCI/Figures/16S/QIIME2-DAD2/FourStages-DAD2-F295+R205-Filtered1/Network/FastSpar-Genus/IP/1000times/0.77_p0.01")
+wdImport <- c("E:/working/SCI/Soil Micro/SCI/Figures/16S/QIIME2-DAD2/FourStages-DAD2-F295+R205-Filtered1/Import")
+wdImport2 <- c("E:/working/SCI/Soil Micro/SCI/Figures/16S/QIIME2-DAD2/FourStages-DAD2-F295+R205-Filtered1/Network/FastSpar-Genus/IP")
+wdOutput <- c("E:/working/SCI/Soil Micro/SCI/Figures/16S/QIIME2-DAD2/FourStages-DAD2-F295+R205-Filtered1/Network/FastSpar-Genus/IP/1000times/0.77_p0.01")
 library(stringr)#字符串处理.string manipulation
 library(tidyr)
 library(dplyr)
