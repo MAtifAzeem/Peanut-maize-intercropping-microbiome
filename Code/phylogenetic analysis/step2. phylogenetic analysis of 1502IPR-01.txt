@@ -1,0 +1,3739 @@
+
+#in Linux
+# Step 1. Retrieve sequences
+## Create directories for analysis
+mkdir blastdb queries fsa results blastdb_custom
+
+##download genomic sequences of type strain of Pseudomonas from IMG and NCBI database according to previous literature(Doi:10.1111/1462-2920.14130)
+##merge multiple  fsa file to one including all genomic sequences of type strain of pseudomons,1502IPR-01 and outgroup
+##cat命令合并多个文件
+cat *.fsa > Pseudomonas_genome_db_IP1.fsa
+
+## Step 2. Make BLAST database 
+    makeblastdb -in /home/wnq13579/genomic_sequencing/blast/fasta/Pseudomonas_genome_db_IP1/Pseudomonas_genome_db_IP1.fsa -dbtype nucl \
+    -parse_seqids -out /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 -title "Pseudomonas_genome_db_IP1"
+
+# Setp 3. Run BLAST
+## Retrieve query sequences
+sudo apt install ncbi-entrez-direct 
+##PA3297
+    efetch -db protein -format fsa \
+    -id NP_251987.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3297.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3297.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3297/PA3297.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3297.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-200 \
+	-subject_besthit \
+	-outfmt '7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq' \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3297/PA3297.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第12行
+awk '{ print ">"$2"\n"$12 }' <PA3297.Pseudomonas_genome_db_IP1.tab.out>PA3297.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3297.tblastn.fsa>PA3297.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3297.mafft.fsa>PA3297.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3297.mafft.fsa>PA3297.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3297.tblastn.fsa>PA3297.tblastn_header.txt
+#
+mkdir PA3297.iqtree2
+cp PA3297.mafft_renamed.fsa PA3297.iqtree2
+cd PA3297.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3297.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA3308
+    efetch -db protein -format fsa \
+    -id NP_251998.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3308.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3308.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-200 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3308/PA3308.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3308.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-200 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3308/PA3308.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第12行
+	awk '{ print ">"$2"\n"$12 }' <PA3308.Pseudomonas_genome_db_IP1.tab.out>PA3308.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3308.tblastn.fsa>PA3308.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3308.mafft.fsa>PA3308.mafft_renamed.fsa
+##
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3308.mafft.fsa>PA3308.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3308.tblastn.fsa>PA3308.tblastn_header.txt
+
+
+mkdir PA3308.iqtree2
+cp PA3308.mafft_renamed.fsa PA3308.iqtree2
+cd PA3308.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3308.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA3257
+ efetch -db protein -format fsa \
+    -id NP_251947.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3257.fsa
+##
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3257.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-200 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3257/PA3257.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3257.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-200 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3257/PA3257.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第12行
+	awk '{ print ">"$2"\n"$12 }' <PA3257.Pseudomonas_genome_db_IP1.tab.out>PA3257.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3257.tblastn.fsa>PA3257.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3257.mafft.fsa>PA3257.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3257.mafft.fsa>PA3257.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3257.tblastn.fsa>PA3257.tblastn_header.txt
+#
+mkdir PA3257.iqtree2
+cp PA3257.mafft_renamed.fsa PA3257.iqtree2
+cd PA3257.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3257.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+
+##PA1005
+ efetch -db protein -format fsa \
+    -id NP_249696.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1005.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1005.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1005/PA1005.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1005.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1005/PA1005.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1005.Pseudomonas_genome_db_IP1.tab.out>PA1005.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1005.tblastn.fsa>PA1005.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1005.mafft.fsa>PA1005.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1005.mafft.fsa>PA1005.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1005.tblastn.fsa>PA1005.tblastn_header.txt
+#
+mkdir PA1005.iqtree2
+cp PA1005.mafft_renamed.fsa PA1005.iqtree2
+cd PA1005.iqtree2
+#
+mkdir PA1005.iqtree2
+cp PA1005.mafft_renamed.fsa PA1005.iqtree2
+cd PA1005.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1005.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+	
+	
+
+##PA1294
+ efetch -db protein -format fsa \
+    -id NP_249985.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1294.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1294.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1294/PA1294.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1294.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1294/PA1294.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1294.Pseudomonas_genome_db_IP1.tab.out>PA1294.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1294.tblastn.fsa>PA1294.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1294.mafft.fsa>PA1294.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1294.mafft.fsa>PA1294.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1294.tblastn.fsa>PA1294.tblastn_header.txt
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1294.mafft.fsa>PA1294.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1294.tblastn.fsa>PA1294.tblastn_header.txt
+#
+mkdir PA1294.iqtree2
+cp PA1294.mafft_renamed.fsa PA1294.iqtree2
+cd PA1294.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1294.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+	
+##PA0005
+ efetch -db protein -format fsa \
+    -id NP_064725.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0005.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0005.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0005/PA0005.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0005.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 8e-14 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0005/PA0005.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0005.Pseudomonas_genome_db_IP1.tab.out>PA0005.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0005.tblastn.fsa>PA0005.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0005.mafft.fsa>PA0005.mafft_renamed.fsa
+##check header name
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0005.mafft.fsa>PA0005.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0005.tblastn.fsa>PA0005.tblastn_header.txt
+
+mkdir PA0005.iqtree2
+cp PA0005.mafft_renamed.fsa PA0005.iqtree2
+cd PA0005.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0005.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA0008
+ efetch -db protein -format fsa \
+    -id NP_064728.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0008.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0008.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0008/PA0008.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0008.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0008/PA0008.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0008.Pseudomonas_genome_db_IP1.tab.out>PA0008.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0008.tblastn.fsa>PA0008.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0008.mafft.fsa>PA0008.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0008.mafft.fsa>PA0008.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0008.tblastn.fsa>PA0008.tblastn_header.txt
+
+mkdir PA0008.iqtree2
+cp PA0008.mafft_renamed.fsa PA0008.iqtree2
+cd PA0008.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0008.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+	
+##PA0308
+ efetch -db protein -format fsa \
+    -id NP_248999.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0308.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0308.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0308/PA0308.Pseudomonas_genome_db_IP1.out
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0308.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0308/PA0308.Pseudomonas_genome_db_IP1.tab.out
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0308.Pseudomonas_genome_db_IP1.tab.out>PA0308.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0308.tblastn.fsa>PA0308.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0308.mafft.fsa>PA0308.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0308.mafft.fsa>PA0308.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0308.tblastn.fsa>PA0308.tblastn_header.txt
+
+mkdir PA0308.iqtree2
+cp PA0308.mafft_renamed.fsa PA0308.iqtree2
+cd PA0308.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0308.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+	
+##PA0373
+ efetch -db protein -format fsa \
+    -id NP_249064.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0373.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0373.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0373/PA0373.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0373.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0373/PA0373.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0373.Pseudomonas_genome_db_IP1.tab.out>PA0373.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0373.tblastn.fsa>PA0373.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0373.mafft.fsa>PA0373.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0373.mafft.fsa>PA0373.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0373.tblastn.fsa>PA0373.tblastn_header.txt
+
+mkdir PA0373.iqtree2
+cp PA0373.mafft_renamed.fsa PA0373.iqtree2
+cd PA0373.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0373.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+
+##PA0375
+ efetch -db protein -format fsa \
+    -id NP_249066.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0375.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0375.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0375/PA0375.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0375.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0375/PA0375.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0375.Pseudomonas_genome_db_IP1.tab.out>PA0375.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0375.tblastn.fsa>PA0375.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0375.mafft.fsa>PA0375.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0375.mafft.fsa>PA0375.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0375.tblastn.fsa>PA0375.tblastn_header.txt
+
+mkdir PA0375.iqtree2
+cp PA0375.mafft_renamed.fsa PA0375.iqtree2
+cd PA0375.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0375.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+	##PA0411
+ efetch -db protein -format fsa \
+    -id NP_249102.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0411.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0411.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0411/PA0411.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0411.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0411/PA0411.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0411.Pseudomonas_genome_db_IP1.tab.out>PA0411.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0411.tblastn.fsa>PA0411.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0411.mafft.fsa>PA0411.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0411.mafft.fsa>PA0411.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0411.tblastn.fsa>PA0411.tblastn_header.txt
+
+mkdir PA0411.iqtree2
+cp PA0411.mafft_renamed.fsa PA0411.iqtree2
+cd PA0411.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0411.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA0586
+ efetch -db protein -format fsa \
+    -id NP_249277.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0586.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0586.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0586/PA0586.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0586.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0586/PA0586.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0586.Pseudomonas_genome_db_IP1.tab.out>PA0586.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0586.tblastn.fsa>PA0586.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0586.mafft.fsa>PA0586.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0586.mafft.fsa>PA0586.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0586.tblastn.fsa>PA0586.tblastn_header.txt
+
+mkdir PA0586.iqtree2
+cp PA0586.mafft_renamed.fsa PA0586.iqtree2
+cd PA0586.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0586.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA0759
+ efetch -db protein -format fsa \
+    -id  NP_249450.1 > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0759.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0759.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0759/PA0759.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0759.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0759/PA0759.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0759.Pseudomonas_genome_db_IP1.tab.out>PA0759.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0759.tblastn.fsa>PA0759.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0759.mafft.fsa>PA0759.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0759.mafft.fsa>PA0759.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0759.tblastn.fsa>PA0759.tblastn_header.txt
+
+mkdir PA0759.iqtree2
+cp PA0759.mafft_renamed.fsa PA0759.iqtree2
+cd PA0759.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0759.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+##PA0934
+ efetch -db protein -format fsa \
+    -id NP_249625.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0934.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0934.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-150 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0934/PA0934.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0934.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0934/PA0934.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0934.Pseudomonas_genome_db_IP1.tab.out>PA0934.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0934.tblastn.fsa>PA0934.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0934.mafft.fsa>PA0934.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0934.mafft.fsa>PA0934.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0934.tblastn.fsa>PA0934.tblastn_header.txt
+
+mkdir PA0934.iqtree2
+cp PA0934.mafft_renamed.fsa PA0934.iqtree2
+cd PA0934.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0934.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA0944
+ efetch -db protein -format fsa \
+    -id NP_249635.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0944.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0944.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0944/PA0944.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA0944.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA0944/PA0944.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA0944.Pseudomonas_genome_db_IP1.tab.out>PA0944.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA0944.tblastn.fsa>PA0944.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA0944.mafft.fsa>PA0944.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0944.mafft.fsa>PA0944.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA0944.tblastn.fsa>PA0944.tblastn_header.txt
+
+mkdir PA0944.iqtree2
+cp PA0944.mafft_renamed.fsa PA0944.iqtree2
+cd PA0944.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA0944.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA1011
+ efetch -db protein -format fsa \
+    -id NP_249702.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1011.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1011.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1011/PA1011.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1011.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1011/PA1011.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1011.Pseudomonas_genome_db_IP1.tab.out>PA1011.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1011.tblastn.fsa>PA1011.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1011.mafft.fsa>PA1011.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1011.mafft.fsa>PA1011.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1011.tblastn.fsa>PA1011.tblastn_header.txt
+
+mkdir PA1011.iqtree2
+cp PA1011.mafft_renamed.fsa PA1011.iqtree2
+cd PA1011.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1011.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA1375
+ efetch -db protein -format fsa \
+    -id NP_250066  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1375.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1375.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1375/PA1375.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1375.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1375/PA1375.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1375.Pseudomonas_genome_db_IP1.tab.out>PA1375.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1375.tblastn.fsa>PA1375.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1375.mafft.fsa>PA1375.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1375.mafft.fsa>PA1375.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1375.tblastn.fsa>PA1375.tblastn_header.txt
+
+mkdir PA1375.iqtree2
+cp PA1375.mafft_renamed.fsa PA1375.iqtree2
+cd PA1375.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1375.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA1528
+ efetch -db protein -format fsa \
+    -id NP_250066  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1528.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1528.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1528/PA1528.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1528.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1528/PA1528.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1528.Pseudomonas_genome_db_IP1.tab.out>PA1528.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1528.tblastn.fsa>PA1528.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1528.mafft.fsa>PA1528.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1528.mafft.fsa>PA1528.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1528.tblastn.fsa>PA1528.tblastn_header.txt
+
+mkdir PA1528.iqtree2
+cp PA1528.mafft_renamed.fsa PA1528.iqtree2
+cd PA1528.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1528.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA1614
+ efetch -db protein -format fsa \
+    -id NP_250305.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1614.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1614.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1614/PA1614.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1614.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1614/PA1614.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1614.Pseudomonas_genome_db_IP1.tab.out>PA1614.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1614.tblastn.fsa>PA1614.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1614.mafft.fsa>PA1614.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1614.mafft.fsa>PA1614.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1614.tblastn.fsa>PA1614.tblastn_header.txt
+
+mkdir PA1614.iqtree2
+cp PA1614.mafft_renamed.fsa PA1614.iqtree2
+cd PA1614.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1614.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA1758
+ efetch -db protein -format fsa \
+    -id NP_250449.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1758.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1758.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1758/PA1758.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1758.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1758/PA1758.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1758.Pseudomonas_genome_db_IP1.tab.out>PA1758.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1758.tblastn.fsa>PA1758.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1758.mafft.fsa>PA1758.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1758.mafft.fsa>PA1758.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1758.tblastn.fsa>PA1758.tblastn_header.txt
+
+mkdir PA1758.iqtree2
+cp PA1758.mafft_renamed.fsa PA1758.iqtree2
+cd PA1758.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1758.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA1803
+ efetch -db protein -format fsa \
+    -id NP_250494.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1803.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1803.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-170 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1803/PA1803.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1803.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1803/PA1803.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1803.Pseudomonas_genome_db_IP1.tab.out>PA1803.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1803.tblastn.fsa>PA1803.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1803.mafft.fsa>PA1803.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1803.mafft.fsa>PA1803.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1803.tblastn.fsa>PA1803.tblastn_header.txt
+
+mkdir PA1803.iqtree2
+cp PA1803.mafft_renamed.fsa PA1803.iqtree2
+cd PA1803.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1803.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA1805
+ efetch -db protein -format fsa \
+    -id NP_250496.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1805.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1805.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1805/PA1805.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1805.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1805/PA1805.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1805.Pseudomonas_genome_db_IP1.tab.out>PA1805.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1805.tblastn.fsa>PA1805.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1805.mafft.fsa>PA1805.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1805.mafft.fsa>PA1805.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1805.tblastn.fsa>PA1805.tblastn_header.txt
+
+mkdir PA1805.iqtree2
+cp PA1805.mafft_renamed.fsa PA1805.iqtree2
+cd PA1805.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1805.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA1814
+ efetch -db protein -format fsa \
+    -id NP_250505.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1814.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1814.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1814/PA1814.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA1814.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA1814/PA1814.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA1814.Pseudomonas_genome_db_IP1.tab.out>PA1814.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA1814.tblastn.fsa>PA1814.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA1814.mafft.fsa>PA1814.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1814.mafft.fsa>PA1814.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA1814.tblastn.fsa>PA1814.tblastn_header.txt
+
+mkdir PA1814.iqtree2
+cp PA1814.mafft_renamed.fsa PA1814.iqtree2
+cd PA1814.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA1814.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA2543
+ efetch -db protein -format fsa \
+    -id NP_251233.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2543.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2543.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2543/PA2543.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2543.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2543/PA2543.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2543.Pseudomonas_genome_db_IP1.tab.out>PA2543.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2543.tblastn.fsa>PA2543.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2543.mafft.fsa>PA2543.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2543.mafft.fsa>PA2543.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2543.tblastn.fsa>PA2543.tblastn_header.txt
+
+mkdir PA2543.iqtree2
+cp PA2543.mafft_renamed.fsa PA2543.iqtree2
+cd PA2543.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2543.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA2615
+ efetch -db protein -format fsa \
+    -id NP_251305.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2615.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2615.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2615/PA2615.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2615.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2615/PA2615.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2615.Pseudomonas_genome_db_IP1.tab.out>PA2615.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2615.tblastn.fsa>PA2615.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2615.mafft.fsa>PA2615.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2615.mafft.fsa>PA2615.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2615.tblastn.fsa>PA2615.tblastn_header.txt
+
+mkdir PA2615.iqtree2
+cp PA2615.mafft_renamed.fsa PA2615.iqtree2
+cd PA2615.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2615.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA2630
+ efetch -db protein -format fsa \
+    -id NP_251320.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2630.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2630.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2630/PA2630.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2630.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2630/PA2630.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2630.Pseudomonas_genome_db_IP1.tab.out>PA2630.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2630.tblastn.fsa>PA2630.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2630.mafft.fsa>PA2630.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2630.mafft.fsa>PA2630.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2630.tblastn.fsa>PA2630.tblastn_header.txt
+
+mkdir PA2630.iqtree2
+cp PA2630.mafft_renamed.fsa PA2630.iqtree2
+cd PA2630.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2630.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA2633
+ efetch -db protein -format fsa \
+    -id NP_251323.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2633.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2633.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2633/PA2633.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2633.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2633/PA2633.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2633.Pseudomonas_genome_db_IP1.tab.out>PA2633.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2633.tblastn.fsa>PA2633.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2633.mafft.fsa>PA2633.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2633.mafft.fsa>PA2633.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2633.tblastn.fsa>PA2633.tblastn_header.txt
+
+mkdir PA2633.iqtree2
+cp PA2633.mafft_renamed.fsa PA2633.iqtree2
+cd PA2633.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2633.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA2858
+ efetch -db protein -format fsa \
+    -id NP_251548.1   > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2858.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2858.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2858/PA2858.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2858.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2858/PA2858.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2858.Pseudomonas_genome_db_IP1.tab.out>PA2858.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2858.tblastn.fsa>PA2858.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2858.mafft.fsa>PA2858.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2858.mafft.fsa>PA2858.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2858.tblastn.fsa>PA2858.tblastn_header.txt
+
+mkdir PA2858.iqtree2
+cp PA2858.mafft_renamed.fsa PA2858.iqtree2
+cd PA2858.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2858.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+	##PA2961
+ efetch -db protein -format fsa \
+    -id NP_251651.1   > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2961.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2961.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2961/PA2961.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2961.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2961/PA2961.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2961.Pseudomonas_genome_db_IP1.tab.out>PA2961.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2961.tblastn.fsa>PA2961.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2961.mafft.fsa>PA2961.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2961.mafft.fsa>PA2961.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2961.tblastn.fsa>PA2961.tblastn_header.txt
+
+mkdir PA2961.iqtree2
+cp PA2961.mafft_renamed.fsa PA2961.iqtree2
+cd PA2961.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2961.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA2963
+ efetch -db protein -format fsa \
+    -id NP_251653.1   > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2963.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2963.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2963/PA2963.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2963.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2963/PA2963.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2963.Pseudomonas_genome_db_IP1.tab.out>PA2963.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2963.tblastn.fsa>PA2963.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2963.mafft.fsa>PA2963.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2963.mafft.fsa>PA2963.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2963.tblastn.fsa>PA2963.tblastn_header.txt
+
+mkdir PA2963.iqtree2
+cp PA2963.mafft_renamed.fsa PA2963.iqtree2
+cd PA2963.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2963.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA2964
+ efetch -db protein -format fsa \
+    -id NP_251654.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2964.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2964.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2964/PA2964.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2964.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2964/PA2964.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2964.Pseudomonas_genome_db_IP1.tab.out>PA2964.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2964.tblastn.fsa>PA2964.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2964.mafft.fsa>PA2964.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2964.mafft.fsa>PA2964.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2964.tblastn.fsa>PA2964.tblastn_header.txt
+
+mkdir PA2964.iqtree2
+cp PA2964.mafft_renamed.fsa PA2964.iqtree2
+cd PA2964.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2964.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA2974
+ efetch -db protein -format fsa \
+    -id NP_251664.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2974.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2974.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2974/PA2974.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2974.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2974/PA2974.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2974.Pseudomonas_genome_db_IP1.tab.out>PA2974.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2974.tblastn.fsa>PA2974.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2974.mafft.fsa>PA2974.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2974.mafft.fsa>PA2974.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2974.tblastn.fsa>PA2974.tblastn_header.txt
+
+mkdir PA2974.iqtree2
+cp PA2974.mafft_renamed.fsa PA2974.iqtree2
+cd PA2974.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2974.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA2981
+ efetch -db protein -format fsa \
+    -id NP_251671.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2981.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2981.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2981/PA2981.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA2981.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA2981/PA2981.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA2981.Pseudomonas_genome_db_IP1.tab.out>PA2981.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA2981.tblastn.fsa>PA2981.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA2981.mafft.fsa>PA2981.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2981.mafft.fsa>PA2981.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA2981.tblastn.fsa>PA2981.tblastn_header.txt
+
+mkdir PA2981.iqtree2
+cp PA2981.mafft_renamed.fsa PA2981.iqtree2
+cd PA2981.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA2981.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+##PA3002
+ efetch -db protein -format fsa \
+    -id NP_251692.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3002.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3002.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3002/PA3002.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3002.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3002/PA3002.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3002.Pseudomonas_genome_db_IP1.tab.out>PA3002.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3002.tblastn.fsa>PA3002.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3002.mafft.fsa>PA3002.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3002.mafft.fsa>PA3002.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3002.tblastn.fsa>PA3002.tblastn_header.txt
+
+mkdir PA3002.iqtree2
+cp PA3002.mafft_renamed.fsa PA3002.iqtree2
+cd PA3002.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3002.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA3011
+ efetch -db protein -format fsa \
+    -id NP_251701.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3011.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3011.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-150 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3011/PA3011.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3011.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3011/PA3011.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3011.Pseudomonas_genome_db_IP1.tab.out>PA3011.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3011.tblastn.fsa>PA3011.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3011.mafft.fsa>PA3011.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3011.mafft.fsa>PA3011.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3011.tblastn.fsa>PA3011.tblastn_header.txt
+
+mkdir PA3011.iqtree2
+cp PA3011.mafft_renamed.fsa PA3011.iqtree2
+cd PA3011.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3011.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA3020
+ efetch -db protein -format fsa \
+    -id NP_251710.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3020.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3020.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-150 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3020/PA3020.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3020.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3020/PA3020.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3020.Pseudomonas_genome_db_IP1.tab.out>PA3020.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3020.tblastn.fsa>PA3020.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3020.mafft.fsa>PA3020.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3020.mafft.fsa>PA3020.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3020.tblastn.fsa>PA3020.tblastn_header.txt
+
+mkdir PA3020.iqtree2
+cp PA3020.mafft_renamed.fsa PA3020.iqtree2
+cd PA3020.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3020.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA3047
+ efetch -db protein -format fsa \
+    -id NP_251737.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3047.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3047.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-150 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3047/PA3047.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3047.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3047/PA3047.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3047.Pseudomonas_genome_db_IP1.tab.out>PA3047.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3047.tblastn.fsa>PA3047.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3047.mafft.fsa>PA3047.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3047.mafft.fsa>PA3047.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3047.tblastn.fsa>PA3047.tblastn_header.txt
+
+mkdir PA3047.iqtree2
+cp PA3047.mafft_renamed.fsa PA3047.iqtree2
+cd PA3047.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3047.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3068
+ efetch -db protein -format fsa \
+    -id NP_251758.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3068.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3068.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-150 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3068/PA3068.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3068.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3068/PA3068.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3068.Pseudomonas_genome_db_IP1.tab.out>PA3068.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3068.tblastn.fsa>PA3068.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3068.mafft.fsa>PA3068.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3068.mafft.fsa>PA3068.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3068.tblastn.fsa>PA3068.tblastn_header.txt
+
+mkdir PA3068.iqtree2
+cp PA3068.mafft_renamed.fsa PA3068.iqtree2
+cd PA3068.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3068.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3073
+ efetch -db protein -format fsa \
+    -id NP_251763.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3073.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3073.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3073/PA3073.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3073.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3073/PA3073.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3073.Pseudomonas_genome_db_IP1.tab.out>PA3073.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3073.tblastn.fsa>PA3073.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3073.mafft.fsa>PA3073.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3073.mafft.fsa>PA3073.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3073.tblastn.fsa>PA3073.tblastn_header.txt
+
+mkdir PA3073.iqtree2
+cp PA3073.mafft_renamed.fsa PA3073.iqtree2
+cd PA3073.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3073.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+##PA3074
+ efetch -db protein -format fsa \
+    -id NP_251764.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3074.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3074.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3074/PA3074.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3074.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3074/PA3074.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3074.Pseudomonas_genome_db_IP1.tab.out>PA3074.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3074.tblastn.fsa>PA3074.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3074.mafft.fsa>PA3074.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3074.mafft.fsa>PA3074.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3074.tblastn.fsa>PA3074.tblastn_header.txt
+
+mkdir PA3074.iqtree2
+cp PA3074.mafft_renamed.fsa PA3074.iqtree2
+cd PA3074.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3074.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA3075
+ efetch -db protein -format fsa \
+    -id NP_251764.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3075.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3075.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3075/PA3075.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3075.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3075/PA3075.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3075.Pseudomonas_genome_db_IP1.tab.out>PA3075.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3075.tblastn.fsa>PA3075.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3075.mafft.fsa>PA3075.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3075.mafft.fsa>PA3075.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3075.tblastn.fsa>PA3075.tblastn_header.txt
+
+mkdir PA3075.iqtree2
+cp PA3075.mafft_renamed.fsa PA3075.iqtree2
+cd PA3075.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3075.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3087
+ efetch -db protein -format fsa \
+    -id NP_251777.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3087.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3087.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3087/PA3087.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3087.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3087/PA3087.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3087.Pseudomonas_genome_db_IP1.tab.out>PA3087.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3087.tblastn.fsa>PA3087.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3087.mafft.fsa>PA3087.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3087.mafft.fsa>PA3087.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3087.tblastn.fsa>PA3087.tblastn_header.txt
+
+mkdir PA3087.iqtree2
+cp PA3087.mafft_renamed.fsa PA3087.iqtree2
+cd PA3087.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3087.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3111
+ efetch -db protein -format fsa \
+    -id NP_251801.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3111.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3111.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3111/PA3111.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3111.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3111/PA3111.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3111.Pseudomonas_genome_db_IP1.tab.out>PA3111.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3111.tblastn.fsa>PA3111.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3111.mafft.fsa>PA3111.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3111.mafft.fsa>PA3111.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3111.tblastn.fsa>PA3111.tblastn_header.txt
+
+mkdir PA3111.iqtree2
+cp PA3111.mafft_renamed.fsa PA3111.iqtree2
+cd PA3111.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3111.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+	##PA3198
+ efetch -db protein -format fsa \
+    -id NP_251888.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3198.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3198.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3198/PA3198.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3198.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3198/PA3198.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3198.Pseudomonas_genome_db_IP1.tab.out>PA3198.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3198.tblastn.fsa>PA3198.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3198.mafft.fsa>PA3198.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3198.mafft.fsa>PA3198.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3198.tblastn.fsa>PA3198.tblastn_header.txt
+
+mkdir PA3198.iqtree2
+cp PA3198.mafft_renamed.fsa PA3198.iqtree2
+cd PA3198.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3198.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3198
+ efetch -db protein -format fsa \
+    -id NP_251888.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3198.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3198.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3198/PA3198.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3198.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3198/PA3198.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3198.Pseudomonas_genome_db_IP1.tab.out>PA3198.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3198.tblastn.fsa>PA3198.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3198.mafft.fsa>PA3198.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3198.mafft.fsa>PA3198.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3198.tblastn.fsa>PA3198.tblastn_header.txt
+
+mkdir PA3198.iqtree2
+cp PA3198.mafft_renamed.fsa PA3198.iqtree2
+cd PA3198.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3198.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3238
+ efetch -db protein -format fsa \
+    -id NP_251928.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3238.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3238.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3238/PA3238.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3238.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3238/PA3238.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3238.Pseudomonas_genome_db_IP1.tab.out>PA3238.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3238.tblastn.fsa>PA3238.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3238.mafft.fsa>PA3238.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3238.mafft.fsa>PA3238.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3238.tblastn.fsa>PA3238.tblastn_header.txt
+
+mkdir PA3238.iqtree2
+cp PA3238.mafft_renamed.fsa PA3238.iqtree2
+cd PA3238.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3238.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+##PA3243
+ efetch -db protein -format fsa \
+    -id NP_251933.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3243.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3243.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3243/PA3243.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3243.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3243/PA3243.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3243.Pseudomonas_genome_db_IP1.tab.out>PA3243.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3243.tblastn.fsa>PA3243.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3243.mafft.fsa>PA3243.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3243.mafft.fsa>PA3243.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3243.tblastn.fsa>PA3243.tblastn_header.txt
+
+mkdir PA3243.iqtree2
+cp PA3243.mafft_renamed.fsa PA3243.iqtree2
+cd PA3243.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3243.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3344
+ efetch -db protein -format fsa \
+    -id NP_252034.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3344.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3344.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3344/PA3344.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3344.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3344/PA3344.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3344.Pseudomonas_genome_db_IP1.tab.out>PA3344.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3344.tblastn.fsa>PA3344.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3344.mafft.fsa>PA3344.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3344.mafft.fsa>PA3344.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3344.tblastn.fsa>PA3344.tblastn_header.txt
+
+mkdir PA3344.iqtree2
+cp PA3344.mafft_renamed.fsa PA3344.iqtree2
+cd PA3344.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3344.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA3456
+ efetch -db protein -format fsa \
+    -id NP_252146.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3456.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3456.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3456/PA3456.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3456.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3456/PA3456.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3456.Pseudomonas_genome_db_IP1.tab.out>PA3456.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3456.tblastn.fsa>PA3456.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3456.mafft.fsa>PA3456.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3456.mafft.fsa>PA3456.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3456.tblastn.fsa>PA3456.tblastn_header.txt
+
+mkdir PA3456.iqtree2
+cp PA3456.mafft_renamed.fsa PA3456.iqtree2
+cd PA3456.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3456.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3620
+ efetch -db protein -format fsa \
+    -id NP_252310.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3620.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3620.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3620/PA3620.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3620.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3620/PA3620.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3620.Pseudomonas_genome_db_IP1.tab.out>PA3620.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3620.tblastn.fsa>PA3620.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3620.mafft.fsa>PA3620.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3620.mafft.fsa>PA3620.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3620.tblastn.fsa>PA3620.tblastn_header.txt
+
+mkdir PA3620.iqtree2
+cp PA3620.mafft_renamed.fsa PA3620.iqtree2
+cd PA3620.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3620.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+##PA3626
+ efetch -db protein -format fsa \
+    -id NP_252316.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3626.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3626.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3626/PA3626.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3626.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3626/PA3626.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3626.Pseudomonas_genome_db_IP1.tab.out>PA3626.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3626.tblastn.fsa>PA3626.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3626.mafft.fsa>PA3626.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3626.mafft.fsa>PA3626.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3626.tblastn.fsa>PA3626.tblastn_header.txt
+
+mkdir PA3626.iqtree2
+cp PA3626.mafft_renamed.fsa PA3626.iqtree2
+cd PA3626.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3626.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3638
+ efetch -db protein -format fsa \
+    -id NP_252328.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3638.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3638.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3638/PA3638.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3638.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3638/PA3638.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3638.Pseudomonas_genome_db_IP1.tab.out>PA3638.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3638.tblastn.fsa>PA3638.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3638.mafft.fsa>PA3638.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3638.mafft.fsa>PA3638.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3638.tblastn.fsa>PA3638.tblastn_header.txt
+
+mkdir PA3638.iqtree2
+cp PA3638.mafft_renamed.fsa PA3638.iqtree2
+cd PA3638.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3638.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3658
+ efetch -db protein -format fsa \
+    -id NP_252348.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3658.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3658.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3658/PA3658.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3658.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3658/PA3658.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3658.Pseudomonas_genome_db_IP1.tab.out>PA3658.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3658.tblastn.fsa>PA3658.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3658.mafft.fsa>PA3658.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3658.mafft.fsa>PA3658.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3658.tblastn.fsa>PA3658.tblastn_header.txt
+
+mkdir PA3658.iqtree2
+cp PA3658.mafft_renamed.fsa PA3658.iqtree2
+cd PA3658.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3658.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3800
+ efetch -db protein -format fsa \
+    -id NP_252489.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3800.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3800.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3800/PA3800.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3800.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3800/PA3800.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3800.Pseudomonas_genome_db_IP1.tab.out>PA3800.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3800.tblastn.fsa>PA3800.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3800.mafft.fsa>PA3800.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3800.mafft.fsa>PA3800.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3800.tblastn.fsa>PA3800.tblastn_header.txt
+
+mkdir PA3800.iqtree2
+cp PA3800.mafft_renamed.fsa PA3800.iqtree2
+cd PA3800.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3800.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3805
+ efetch -db protein -format fsa \
+    -id NP_252494.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3805.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3805.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3805/PA3805.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3805.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3805/PA3805.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3805.Pseudomonas_genome_db_IP1.tab.out>PA3805.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3805.tblastn.fsa>PA3805.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3805.mafft.fsa>PA3805.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3805.mafft.fsa>PA3805.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3805.tblastn.fsa>PA3805.tblastn_header.txt
+
+mkdir PA3805.iqtree2
+cp PA3805.mafft_renamed.fsa PA3805.iqtree2
+cd PA3805.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3805.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+##PA3831
+ efetch -db protein -format fsa \
+    -id NP_252520.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3831.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3831.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-150 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3831/PA3831.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3831.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3831/PA3831.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3831.Pseudomonas_genome_db_IP1.tab.out>PA3831.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3831.tblastn.fsa>PA3831.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3831.mafft.fsa>PA3831.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3831.mafft.fsa>PA3831.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3831.tblastn.fsa>PA3831.tblastn_header.txt
+
+mkdir PA3831.iqtree2
+cp PA3831.mafft_renamed.fsa PA3831.iqtree2
+cd PA3831.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3831.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA3949
+ efetch -db protein -format fsa \
+    -id NP_252638.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3949.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3949.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3949/PA3949.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA3949.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA3949/PA3949.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA3949.Pseudomonas_genome_db_IP1.tab.out>PA3949.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA3949.tblastn.fsa>PA3949.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA3949.mafft.fsa>PA3949.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3949.mafft.fsa>PA3949.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA3949.tblastn.fsa>PA3949.tblastn_header.txt
+
+mkdir PA3949.iqtree2
+cp PA3949.mafft_renamed.fsa PA3949.iqtree2
+cd PA3949.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA3949.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4000
+ efetch -db protein -format fsa \
+    -id NP_252689.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4000.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4000.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4000/PA4000.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4000.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4000/PA4000.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4000.Pseudomonas_genome_db_IP1.tab.out>PA4000.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4000.tblastn.fsa>PA4000.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4000.mafft.fsa>PA4000.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4000.mafft.fsa>PA4000.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4000.tblastn.fsa>PA4000.tblastn_header.txt
+
+mkdir PA4000.iqtree2
+cp PA4000.mafft_renamed.fsa PA4000.iqtree2
+cd PA4000.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4000.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4001
+ efetch -db protein -format fsa \
+    -id NP_252690.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4001.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4001.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4001/PA4001.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4001.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4001/PA4001.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4001.Pseudomonas_genome_db_IP1.tab.out>PA4001.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4001.tblastn.fsa>PA4001.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4001.mafft.fsa>PA4001.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4001.mafft.fsa>PA4001.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4001.tblastn.fsa>PA4001.tblastn_header.txt
+
+mkdir PA4001.iqtree2
+cp PA4001.mafft_renamed.fsa PA4001.iqtree2
+cd PA4001.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4001.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4044
+ efetch -db protein -format fsa \
+    -id NP_252733.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4044.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4044.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4044/PA4044.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4044.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4044/PA4044.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4044.Pseudomonas_genome_db_IP1.tab.out>PA4044.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4044.tblastn.fsa>PA4044.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4044.mafft.fsa>PA4044.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4044.mafft.fsa>PA4044.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4044.tblastn.fsa>PA4044.tblastn_header.txt
+
+mkdir PA4044.iqtree2
+cp PA4044.mafft_renamed.fsa PA4044.iqtree2
+cd PA4044.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4044.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA4051
+ efetch -db protein -format fsa \
+    -id NP_252740.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4051.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4051.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4051/PA4051.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4051.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4051/PA4051.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4051.Pseudomonas_genome_db_IP1.tab.out>PA4051.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4051.tblastn.fsa>PA4051.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4051.mafft.fsa>PA4051.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4051.mafft.fsa>PA4051.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4051.tblastn.fsa>PA4051.tblastn_header.txt
+
+mkdir PA4051.iqtree2
+cp PA4051.mafft_renamed.fsa PA4051.iqtree2
+cd PA4051.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4051.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4233
+ efetch -db protein -format fsa \
+    -id NP_252923.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4233.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4233.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4233/PA4233.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4233.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4233/PA4233.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4233.Pseudomonas_genome_db_IP1.tab.out>PA4233.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4233.tblastn.fsa>PA4233.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4233.mafft.fsa>PA4233.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4233.mafft.fsa>PA4233.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4233.tblastn.fsa>PA4233.tblastn_header.txt
+
+mkdir PA4233.iqtree2
+cp PA4233.mafft_renamed.fsa PA4233.iqtree2
+cd PA4233.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4233.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4393
+ efetch -db protein -format fsa \
+    -id NP_253083.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4393.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4393.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-82 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4393/PA4393.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4393.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4393/PA4393.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4393.Pseudomonas_genome_db_IP1.tab.out>PA4393.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4393.tblastn.fsa>PA4393.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4393.mafft.fsa>PA4393.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4393.mafft.fsa>PA4393.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4393.tblastn.fsa>PA4393.tblastn_header.txt
+
+mkdir PA4393.iqtree2
+cp PA4393.mafft_renamed.fsa PA4393.iqtree2
+cd PA4393.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4393.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \##PA4397
+ efetch -db protein -format fsa \
+    -id NP_253087.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4397.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4397.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-88 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4397/PA4397.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4397.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4397/PA4397.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4397.Pseudomonas_genome_db_IP1.tab.out>PA4397.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4397.tblastn.fsa>PA4397.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4397.mafft.fsa>PA4397.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4397.mafft.fsa>PA4397.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4397.tblastn.fsa>PA4397.tblastn_header.txt
+
+mkdir PA4397.iqtree2
+cp PA4397.mafft_renamed.fsa PA4397.iqtree2
+cd PA4397.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4397.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4423
+ efetch -db protein -format fsa \
+    -id NP_253113.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4423.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4423.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4423/PA4423.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4423.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4423/PA4423.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4423.Pseudomonas_genome_db_IP1.tab.out>PA4423.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4423.tblastn.fsa>PA4423.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4423.mafft.fsa>PA4423.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4423.mafft.fsa>PA4423.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4423.tblastn.fsa>PA4423.tblastn_header.txt
+
+mkdir PA4423.iqtree2
+cp PA4423.mafft_renamed.fsa PA4423.iqtree2
+cd PA4423.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4423.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4446
+ efetch -db protein -format fsa \
+    -id NP_253136.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4446.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4446.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4446/PA4446.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4446.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4446/PA4446.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4446.Pseudomonas_genome_db_IP1.tab.out>PA4446.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4446.tblastn.fsa>PA4446.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4446.mafft.fsa>PA4446.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4446.mafft.fsa>PA4446.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4446.tblastn.fsa>PA4446.tblastn_header.txt
+
+mkdir PA4446.iqtree2
+cp PA4446.mafft_renamed.fsa PA4446.iqtree2
+cd PA4446.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4446.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA4542
+ efetch -db protein -format fsa \
+    -id NP_253232.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4542.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4542.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-180 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4542/PA4542.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4542.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4542/PA4542.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4542.Pseudomonas_genome_db_IP1.tab.out>PA4542.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4542.tblastn.fsa>PA4542.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4542.mafft.fsa>PA4542.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4542.mafft.fsa>PA4542.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4542.tblastn.fsa>PA4542.tblastn_header.txt
+
+mkdir PA4542.iqtree2
+cp PA4542.mafft_renamed.fsa PA4542.iqtree2
+cd PA4542.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4542.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4617
+ efetch -db protein -format fsa \
+    -id NP_253307.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4617.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4617.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4617/PA4617.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4617.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4617/PA4617.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4617.Pseudomonas_genome_db_IP1.tab.out>PA4617.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4617.tblastn.fsa>PA4617.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4617.mafft.fsa>PA4617.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4617.mafft.fsa>PA4617.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4617.tblastn.fsa>PA4617.tblastn_header.txt
+
+mkdir PA4617.iqtree2
+cp PA4617.mafft_renamed.fsa PA4617.iqtree2
+cd PA4617.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4617.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4627
+ efetch -db protein -format fsa \
+    -id NP_253317.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4627.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4627.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4627/PA4627.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4627.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4627/PA4627.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4627.Pseudomonas_genome_db_IP1.tab.out>PA4627.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4627.tblastn.fsa>PA4627.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4627.mafft.fsa>PA4627.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4627.mafft.fsa>PA4627.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4627.tblastn.fsa>PA4627.tblastn_header.txt
+
+mkdir PA4627.iqtree2
+cp PA4627.mafft_renamed.fsa PA4627.iqtree2
+cd PA4627.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4627.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4636
+ efetch -db protein -format fsa \
+    -id NP_253326.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4636.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4636.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4636/PA4636.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4636.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4636/PA4636.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4636.Pseudomonas_genome_db_IP1.tab.out>PA4636.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4636.tblastn.fsa>PA4636.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4636.mafft.fsa>PA4636.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4636.mafft.fsa>PA4636.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4636.tblastn.fsa>PA4636.tblastn_header.txt
+
+mkdir PA4636.iqtree2
+cp PA4636.mafft_renamed.fsa PA4636.iqtree2
+cd PA4636.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4636.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+	
+
+##PA4725
+ efetch -db protein -format fsa \
+    -id NP_253413.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4725.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4725.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4725/PA4725.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4725.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4725/PA4725.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4725.Pseudomonas_genome_db_IP1.tab.out>PA4725.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4725.tblastn.fsa>PA4725.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4725.mafft.fsa>PA4725.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4725.mafft.fsa>PA4725.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4725.tblastn.fsa>PA4725.tblastn_header.txt
+
+mkdir PA4725.iqtree2
+cp PA4725.mafft_renamed.fsa PA4725.iqtree2
+cd PA4725.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4725.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4727
+ efetch -db protein -format fsa \
+    -id NP_253415.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4727.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4727.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4727/PA4727.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4727.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4727/PA4727.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4727.Pseudomonas_genome_db_IP1.tab.out>PA4727.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4727.tblastn.fsa>PA4727.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4727.mafft.fsa>PA4727.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4727.mafft.fsa>PA4727.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4727.tblastn.fsa>PA4727.tblastn_header.txt
+
+mkdir PA4727.iqtree2
+cp PA4727.mafft_renamed.fsa PA4727.iqtree2
+cd PA4727.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4727.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4749
+ efetch -db protein -format fsa \
+    -id NP_253437.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4749.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4749.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4749/PA4749.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4749.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4749/PA4749.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4749.Pseudomonas_genome_db_IP1.tab.out>PA4749.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4749.tblastn.fsa>PA4749.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4749.mafft.fsa>PA4749.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4749.mafft.fsa>PA4749.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4749.tblastn.fsa>PA4749.tblastn_header.txt
+
+mkdir PA4749.iqtree2
+cp PA4749.mafft_renamed.fsa PA4749.iqtree2
+cd PA4749.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4749.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4763
+ efetch -db protein -format fsa \
+    -id NP_253451.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4763.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4763.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4763/PA4763.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4763.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4763/PA4763.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4763.Pseudomonas_genome_db_IP1.tab.out>PA4763.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4763.tblastn.fsa>PA4763.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4763.mafft.fsa>PA4763.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4763.mafft.fsa>PA4763.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4763.tblastn.fsa>PA4763.tblastn_header.txt
+
+mkdir PA4763.iqtree2
+cp PA4763.mafft_renamed.fsa PA4763.iqtree2
+cd PA4763.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4763.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4937
+ efetch -db protein -format fsa \
+    -id NP_253624.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4937.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4937.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4937/PA4937.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4937.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4937/PA4937.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4937.Pseudomonas_genome_db_IP1.tab.out>PA4937.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4937.tblastn.fsa>PA4937.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4937.mafft.fsa>PA4937.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4937.mafft.fsa>PA4937.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4937.tblastn.fsa>PA4937.tblastn_header.txt
+
+mkdir PA4937.iqtree2
+cp PA4937.mafft_renamed.fsa PA4937.iqtree2
+cd PA4937.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4937.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA4969
+ efetch -db protein -format fsa \
+    -id NP_253656.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4969.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4969.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4969/PA4969.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA4969.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA4969/PA4969.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA4969.Pseudomonas_genome_db_IP1.tab.out>PA4969.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA4969.tblastn.fsa>PA4969.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA4969.mafft.fsa>PA4969.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4969.mafft.fsa>PA4969.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA4969.tblastn.fsa>PA4969.tblastn_header.txt
+
+mkdir PA4969.iqtree2
+cp PA4969.mafft_renamed.fsa PA4969.iqtree2
+cd PA4969.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA4969.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5045
+ efetch -db protein -format fsa \
+    -id NP_253732.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5045.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5045.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5045/PA5045.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5045.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5045/PA5045.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5045.Pseudomonas_genome_db_IP1.tab.out>PA5045.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5045.tblastn.fsa>PA5045.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5045.mafft.fsa>PA5045.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5045.mafft.fsa>PA5045.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5045.tblastn.fsa>PA5045.tblastn_header.txt
+
+mkdir PA5045.iqtree2
+cp PA5045.mafft_renamed.fsa PA5045.iqtree2
+cd PA5045.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5045.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5064
+ efetch -db protein -format fsa \
+    -id NP_253751.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5064.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5064.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-40 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5064/PA5064.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5064.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5064/PA5064.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5064.Pseudomonas_genome_db_IP1.tab.out>PA5064.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5064.tblastn.fsa>PA5064.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5064.mafft.fsa>PA5064.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5064.mafft.fsa>PA5064.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5064.tblastn.fsa>PA5064.tblastn_header.txt
+
+mkdir PA5064.iqtree2
+cp PA5064.mafft_renamed.fsa PA5064.iqtree2
+cd PA5064.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5064.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA5133
+ efetch -db protein -format fsa \
+    -id NP_253820.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5133.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5133.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5133/PA5133.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5133.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5133/PA5133.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5133.Pseudomonas_genome_db_IP1.tab.out>PA5133.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5133.tblastn.fsa>PA5133.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5133.mafft.fsa>PA5133.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5133.mafft.fsa>PA5133.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5133.tblastn.fsa>PA5133.tblastn_header.txt
+
+mkdir PA5133.iqtree2
+cp PA5133.mafft_renamed.fsa PA5133.iqtree2
+cd PA5133.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5133.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5134
+ efetch -db protein -format fsa \
+    -id NP_253821.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5134.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5134.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5134/PA5134.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5134.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5134/PA5134.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5134.Pseudomonas_genome_db_IP1.tab.out>PA5134.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5134.tblastn.fsa>PA5134.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5134.mafft.fsa>PA5134.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5134.mafft.fsa>PA5134.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5134.tblastn.fsa>PA5134.tblastn_header.txt
+
+mkdir PA5134.iqtree2
+cp PA5134.mafft_renamed.fsa PA5134.iqtree2
+cd PA5134.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5134.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5146
+ efetch -db protein -format fsa \
+    -id NP_253833.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5146.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5146.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5146/PA5146.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5146.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5146/PA5146.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5146.Pseudomonas_genome_db_IP1.tab.out>PA5146.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5146.tblastn.fsa>PA5146.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5146.mafft.fsa>PA5146.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5146.mafft.fsa>PA5146.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5146.tblastn.fsa>PA5146.tblastn_header.txt
+
+mkdir PA5146.iqtree2
+cp PA5146.mafft_renamed.fsa PA5146.iqtree2
+cd PA5146.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5146.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5156
+ efetch -db protein -format fsa \
+    -id NP_253843.2  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5156.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5156.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5156/PA5156.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5156.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5156/PA5156.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5156.Pseudomonas_genome_db_IP1.tab.out>PA5156.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5156.tblastn.fsa>PA5156.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5156.mafft.fsa>PA5156.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5156.mafft.fsa>PA5156.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5156.tblastn.fsa>PA5156.tblastn_header.txt
+
+mkdir PA5156.iqtree2
+cp PA5156.mafft_renamed.fsa PA5156.iqtree2
+cd PA5156.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5156.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5203
+ efetch -db protein -format fsa \
+    -id NP_253890.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5203.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5203.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5203/PA5203.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5203.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5203/PA5203.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5203.Pseudomonas_genome_db_IP1.tab.out>PA5203.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5203.tblastn.fsa>PA5203.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5203.mafft.fsa>PA5203.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5203.mafft.fsa>PA5203.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5203.tblastn.fsa>PA5203.tblastn_header.txt
+
+mkdir PA5203.iqtree2
+cp PA5203.mafft_renamed.fsa PA5203.iqtree2
+cd PA5203.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5203.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5206
+ efetch -db protein -format fsa \
+    -id NP_253893.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5206.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5206.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5206/PA5206.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5206.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5206/PA5206.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5206.Pseudomonas_genome_db_IP1.tab.out>PA5206.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5206.tblastn.fsa>PA5206.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5206.mafft.fsa>PA5206.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5206.mafft.fsa>PA5206.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5206.tblastn.fsa>PA5206.tblastn_header.txt
+
+mkdir PA5206.iqtree2
+cp PA5206.mafft_renamed.fsa PA5206.iqtree2
+cd PA5206.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5206.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5209
+ efetch -db protein -format fsa \
+    -id NP_253896.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5209.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5209.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5209/PA5209.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5209.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5209/PA5209.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5209.Pseudomonas_genome_db_IP1.tab.out>PA5209.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5209.tblastn.fsa>PA5209.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5209.mafft.fsa>PA5209.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5209.mafft.fsa>PA5209.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5209.tblastn.fsa>PA5209.tblastn_header.txt
+
+mkdir PA5209.iqtree2
+cp PA5209.mafft_renamed.fsa PA5209.iqtree2
+cd PA5209.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5209.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA5221
+ efetch -db protein -format fsa \
+    -id NP_253908.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5221.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5221.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5221/PA5221.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5221.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5221/PA5221.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5221.Pseudomonas_genome_db_IP1.tab.out>PA5221.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5221.tblastn.fsa>PA5221.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5221.mafft.fsa>PA5221.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5221.mafft.fsa>PA5221.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5221.tblastn.fsa>PA5221.tblastn_header.txt
+
+mkdir PA5221.iqtree2
+cp PA5221.mafft_renamed.fsa PA5221.iqtree2
+cd PA5221.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5221.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5215
+ efetch -db protein -format fsa \
+    -id NP_253902.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5215.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5215.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5215/PA5215.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5215.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5215/PA5215.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5215.Pseudomonas_genome_db_IP1.tab.out>PA5215.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5215.tblastn.fsa>PA5215.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5215.mafft.fsa>PA5215.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5215.mafft.fsa>PA5215.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5215.tblastn.fsa>PA5215.tblastn_header.txt
+
+mkdir PA5215.iqtree2
+cp PA5215.mafft_renamed.fsa PA5215.iqtree2
+cd PA5215.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5215.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5223
+ efetch -db protein -format fsa \
+    -id NP_253910.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5223.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5223.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5223/PA5223.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5223.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5223/PA5223.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5223.Pseudomonas_genome_db_IP1.tab.out>PA5223.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5223.tblastn.fsa>PA5223.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5223.mafft.fsa>PA5223.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5223.mafft.fsa>PA5223.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5223.tblastn.fsa>PA5223.tblastn_header.txt
+
+mkdir PA5223.iqtree2
+cp PA5223.mafft_renamed.fsa PA5223.iqtree2
+cd PA5223.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5223.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA5224
+ efetch -db protein -format fsa \
+    -id NP_253911.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5224.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5224.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5224/PA5224.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5224.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5224/PA5224.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5224.Pseudomonas_genome_db_IP1.tab.out>PA5224.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5224.tblastn.fsa>PA5224.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5224.mafft.fsa>PA5224.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5224.mafft.fsa>PA5224.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5224.tblastn.fsa>PA5224.tblastn_header.txt
+
+mkdir PA5224.iqtree2
+cp PA5224.mafft_renamed.fsa PA5224.iqtree2
+cd PA5224.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5224.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5241
+ efetch -db protein -format fsa \
+    -id NP_253928.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5241.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5241.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5241/PA5241.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5241.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5241/PA5241.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5241.Pseudomonas_genome_db_IP1.tab.out>PA5241.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5241.tblastn.fsa>PA5241.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5241.mafft.fsa>PA5241.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5241.mafft.fsa>PA5241.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5241.tblastn.fsa>PA5241.tblastn_header.txt
+
+mkdir PA5241.iqtree2
+cp PA5241.mafft_renamed.fsa PA5241.iqtree2
+cd PA5241.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5241.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5242
+ efetch -db protein -format fsa \
+    -id NP_253929.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5242.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5242.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5242/PA5242.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5242.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5242/PA5242.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5242.Pseudomonas_genome_db_IP1.tab.out>PA5242.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5242.tblastn.fsa>PA5242.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5242.mafft.fsa>PA5242.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5242.mafft.fsa>PA5242.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5242.tblastn.fsa>PA5242.tblastn_header.txt
+
+mkdir PA5242.iqtree2
+cp PA5242.mafft_renamed.fsa PA5242.iqtree2
+cd PA5242.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5242.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5257
+ efetch -db protein -format fsa \
+    -id NP_253944.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5257.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5257.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5257/PA5257.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5257.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5257/PA5257.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5257.Pseudomonas_genome_db_IP1.tab.out>PA5257.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5257.tblastn.fsa>PA5257.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5257.mafft.fsa>PA5257.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5257.mafft.fsa>PA5257.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5257.tblastn.fsa>PA5257.tblastn_header.txt
+
+mkdir PA5257.iqtree2
+cp PA5257.mafft_renamed.fsa PA5257.iqtree2
+cd PA5257.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5257.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5258
+ efetch -db protein -format fsa \
+    -id NP_253945.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5258.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5258.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-50 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5258/PA5258.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5258.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5258/PA5258.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5258.Pseudomonas_genome_db_IP1.tab.out>PA5258.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5258.tblastn.fsa>PA5258.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5258.mafft.fsa>PA5258.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5258.mafft.fsa>PA5258.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5258.tblastn.fsa>PA5258.tblastn_header.txt
+
+mkdir PA5258.iqtree2
+cp PA5258.mafft_renamed.fsa PA5258.iqtree2
+cd PA5258.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5258.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA5361
+ efetch -db protein -format fsa \
+    -id NP_254048.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5361.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5361.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5361/PA5361.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5361.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5361/PA5361.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5361.Pseudomonas_genome_db_IP1.tab.out>PA5361.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5361.tblastn.fsa>PA5361.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5361.mafft.fsa>PA5361.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5361.mafft.fsa>PA5361.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5361.tblastn.fsa>PA5361.tblastn_header.txt
+
+mkdir PA5361.iqtree2
+cp PA5361.mafft_renamed.fsa PA5361.iqtree2
+cd PA5361.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5361.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5345
+ efetch -db protein -format fsa \
+    -id NP_254032.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5345.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5345.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5345/PA5345.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5345.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5345/PA5345.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5345.Pseudomonas_genome_db_IP1.tab.out>PA5345.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5345.tblastn.fsa>PA5345.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5345.mafft.fsa>PA5345.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5345.mafft.fsa>PA5345.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5345.tblastn.fsa>PA5345.tblastn_header.txt
+
+mkdir PA5345.iqtree2
+cp PA5345.mafft_renamed.fsa PA5345.iqtree2
+cd PA5345.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5345.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5485
+ efetch -db protein -format fsa \
+    -id NP_254172.  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5485.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5485.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5485/PA5485.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5485.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5485/PA5485.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5485.Pseudomonas_genome_db_IP1.tab.out>PA5485.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5485.tblastn.fsa>PA5485.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5485.mafft.fsa>PA5485.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5485.mafft.fsa>PA5485.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5485.tblastn.fsa>PA5485.tblastn_header.txt
+
+mkdir PA5485.iqtree2
+cp PA5485.mafft_renamed.fsa PA5485.iqtree2
+cd PA5485.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5485.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+
+##PA5493
+ efetch -db protein -format fsa \
+    -id NP_254180.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5493.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5493.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5493/PA5493.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5493.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5493/PA5493.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5493.Pseudomonas_genome_db_IP1.tab.out>PA5493.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5493.tblastn.fsa>PA5493.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5493.mafft.fsa>PA5493.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5493.mafft.fsa>PA5493.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5493.tblastn.fsa>PA5493.tblastn_header.txt
+
+mkdir PA5493.iqtree2
+cp PA5493.mafft_renamed.fsa PA5493.iqtree2
+cd PA5493.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5493.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5493
+ efetch -db protein -format fsa \
+    -id NP_254180.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5493.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5493.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5493/PA5493.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5493.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5493/PA5493.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5493.Pseudomonas_genome_db_IP1.tab.out>PA5493.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5493.tblastn.fsa>PA5493.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5493.mafft.fsa>PA5493.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5493.mafft.fsa>PA5493.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5493.tblastn.fsa>PA5493.tblastn_header.txt
+
+mkdir PA5493.iqtree2
+cp PA5493.mafft_renamed.fsa PA5493.iqtree2
+cd PA5493.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5493.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5567
+ efetch -db protein -format fsa \
+    -id NP_254254.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5567.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5567.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5567/PA5567.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5567.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5567/PA5567.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5567.Pseudomonas_genome_db_IP1.tab.out>PA5567.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5567.tblastn.fsa>PA5567.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5567.mafft.fsa>PA5567.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5567.mafft.fsa>PA5567.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5567.tblastn.fsa>PA5567.tblastn_header.txt
+
+mkdir PA5567.iqtree2
+cp PA5567.mafft_renamed.fsa PA5567.iqtree2
+cd PA5567.iqtree2
+#
+conda activate iqtree2
+iqtree -s PA5567.mafft_renamed.fsa\
+    -nt AUTO \
+    -st AA \
+
+##PA5568
+ efetch -db protein -format fsa \
+    -id NP_254255.1  > /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5568.fsa
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对
+tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5568.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-evalue 1e-100 \
+	-subject_besthit \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp sstart send stitle sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5568/PA5568.Pseudomonas_genome_db_IP1.tab.out
+	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/Pseudomonas_genome_db_IP1/PA5568.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/Pseudomonas_genome_db_IP1 \
+	-subject_besthit \
+    -out /home/wnq13579/genomic_sequencing/blast/results/Pseudomonas_genome_db_IP1/PA5568/PA5568.Pseudomonas_genome_db_IP1.out
+	
+	
+##提取第2行和第10行
+	awk '{ print ">"$2"\n"$12 }' <PA5568.Pseudomonas_genome_db_IP1.tab.out>PA5568.tblastn.fsa
+##sequence alignment by mafft
+	mafft --thread 8 PA5568.tblastn.fsa>PA5568.mafft.fsa
+##rename header
+awk 'BEGIN{FS=":"}''/^>/{print $1; next}{print}'<PA5568.mafft.fsa>PA5568.mafft_renamed.fsa
+
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5568.mafft.fsa>PA5568.mafft_header.txt
+awk 'BEGIN{FS=":"}''/^>/{print $1}'<PA5568.tblastn.fsa>PA5568.tblastn_header.txt
+
+mkdir PA5568.iqtree2
+cp PA5568.mafft_renamed.fsa PA5568.iqtree2
+cd PA5568.iqtree2
+#
+conda activate iqtree2
+iqtree -s mafft.fsa.Pseudomonas_genome_db_IP1\
+    -nt AUTO \
+    -st AA \
+
+

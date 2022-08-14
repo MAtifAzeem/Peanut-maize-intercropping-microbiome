@@ -1,0 +1,699 @@
+
+
+# Step 1. Retrieve sequences
+## Create directories for analysis
+mkdir blastdb queries fsa results blastdb_custom
+
+##download genomic sequences of type strain of Pseudomonas from IMG and NCBI database according to previous literature(Doi:10.1111/1462-2920.14130)
+cat *.fsa >PAO1_IP1.fsa
+##merge multiple  fsa file to one including all genomic sequences of type strain of pseudomons,1502IPR-01 and outgroup
+
+## Step 2. Make BLAST database 
+    makeblastdb -in /home/wnq13579/genomic_sequencing/blast/fasta/PAO1_IP1/PAO1_IP1.fsa -dbtype nucl \
+    -parse_seqids -out /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 -title "db_PAO1_IP1"
+	
+
+
+# Setp 3. Run BLAST
+## Retrieve query sequences
+sudo apt install ncbi-entrez-direct 
+
+##PA2385
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2385.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2385/PA2385_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2385.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2385/PA2385_PAO1_IP1.tab.csv
+##提取第2行和第12行
+	awk '{ print ">"$2"\n"$12 }' <PA2385_PAO1_IP1.tab.csv>PA2385.tblastn.fsa
+
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2385/PA2385.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2385/PA2385_PAO1_IP1.nucl.fsa
+##
+##PA2386
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2386.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2386/PA2386_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2386.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2386/PA2386_PAO1_IP1.tab.csv
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2386/PA2386.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2386/PA2386_PAO1_IP1.nucl.fsa
+	
+##PA2387
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2387.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2387/PA2387_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2387.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2387/PA2387_PAO1_IP1.tab.csv
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2387/PA2387.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2387/PA2387_PAO1_IP1.nucl.fsa
+
+##PA2388
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2388.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2388/PA2388_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2388.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2388/PA2388_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2388/PA2388.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2388/PA2388_PAO1_IP1.nucl.fsa
+	
+
+##PA2389
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2389.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2389/PA2389_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2389.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2389/PA2389_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2389/PA2389.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2389/PA2389_PAO1_IP1.nucl.fsa
+
+##PA2390
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2390.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2390/PA2390_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2390.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2390/PA2390_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2390/PA2390.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2390/PA2390_PAO1_IP1.nucl.fsa
+
+##PA2391
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2391.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2391/PA2391_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2391.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2391/PA2391_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2391/PA2391.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2391/PA2391_PAO1_IP1.nucl.fsa
+	
+##PA2392
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2392.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2392/PA2392_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2392.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2392/PA2392_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2392/PA2392.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2392/PA2392_PAO1_IP1.nucl.fsa
+
+##PA2393
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2393.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2393/PA2393_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2393.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2393/PA2393_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2393/PA2393.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2393/PA2393_PAO1_IP1.nucl.fsa
+
+##PA2394
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2394.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2394/PA2394_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2394.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2394/PA2394_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2394/PA2394.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2394/PA2394_PAO1_IP1.nucl.fsa
+
+##PA2395
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2395.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2395/PA2395_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2395.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2395/PA2395_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2395/PA2395.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2395/PA2395_PAO1_IP1.nucl.fsa
+
+##PA2396
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2396.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2396/PA2396_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2396.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2396/PA2396_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2396/PA2396.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2396/PA2396_PAO1_IP1.nucl.fsa
+	
+##PA2397
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2397.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2397/PA2397_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2397.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2397/PA2397_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2397/PA2397.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2397/PA2397_PAO1_IP1.nucl.fsa
+
+##PA2398
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2398.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2398/PA2398_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2398.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2398/PA2398_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2398/PA2398.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2398/PA2398_PAO1_IP1.nucl.fsa
+
+##PA2399
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2399.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2399/PA2399_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2399.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2399/PA2399_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2399/PA2399.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2399/PA2399_PAO1_IP1.nucl.fsa
+
+##PA2401
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2401.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2401/PA2401_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2401.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2401/PA2401_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2401/PA2401.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2401/PA2401_PAO1_IP1.nucl.fsa
+
+##PA2402
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2402.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2402/PA2402_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2402.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2402/PA2402_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2402/PA2402.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2402/PA2402_PAO1_IP1.nucl.fsa
+
+##PA2403
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2403.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2403/PA2403_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2403.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2403/PA2403_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2403/PA2403.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2403/PA2403_PAO1_IP1.nucl.fsa
+
+
+##PA2404
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2404.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2404/PA2404_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2404.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2404/PA2404_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2404/PA2404.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2404/PA2404_PAO1_IP1.nucl.fsa
+
+##PA2405
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2405.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2405/PA2405_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2405.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2405/PA2405_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2405/PA2405.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2405/PA2405_PAO1_IP1.nucl.fsa
+
+##PA2406
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2406.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2406/PA2406_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2406.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2406/PA2406_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2406/PA2406.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2406/PA2406_PAO1_IP1.nucl.fsa
+
+##PA2407
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2407.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2407/PA2407_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2407.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2407/PA2407_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2407/PA2407.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2407/PA2407_PAO1_IP1.nucl.fsa
+
+##PA2408
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2408.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2408/PA2408_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2408.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2408/PA2408_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2408/PA2408.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2408/PA2408_PAO1_IP1.nucl.fsa
+
+##PA2409
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2409.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2409/PA2409_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2409.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2409/PA2409_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2409/PA2409.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2409/PA2409_PAO1_IP1.nucl.fsa
+
+##PA2410
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2410.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2410/PA2410_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2410.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2410/PA2410_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2410/PA2410.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2410/PA2410_PAO1_IP1.nucl.fsa
+
+##PA2411
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2411.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2411/PA2411_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2411.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2411/PA2411_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2411/PA2411.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2411/PA2411_PAO1_IP1.nucl.fsa
+
+##PA2412
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2412.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2412/PA2412_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2412.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2412/PA2412_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2412/PA2412.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2412/PA2412_PAO1_IP1.nucl.fsa
+
+##PA2413
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2413.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2413/PA2413_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2413.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2413/PA2413_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2413/PA2413.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2413/PA2413_PAO1_IP1.nucl.fsa
+
+##PA2414
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2414.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2414.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.nucl.fsa
+
+
+##PA2414
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2414.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2414.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.nucl.fsa
+
+##PA2414
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2414.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2414.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2414/PA2414_PAO1_IP1.nucl.fsa
+
+##PA2424
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2424.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2424/PA2424_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2424.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2424/PA2424_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2424/PA2424.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2424/PA2424_PAO1_IP1.nucl.fsa
+
+##PA2425
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2425.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2425/PA2425_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2425.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2425/PA2425_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2425/PA2425.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2425/PA2425_PAO1_IP1.nucl.fsa
+
+##PA2426
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2426.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2426/PA2426_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2426.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2426/PA2426_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2426/PA2426.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2426/PA2426_PAO1_IP1.nucl.fsa
+
+##PA2427
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2427.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2427/PA2427_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2427.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2427/PA2427_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2427/PA2427.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2427/PA2427_PAO1_IP1.nucl.fsa
+
+##PA2428
+
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2428.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2428/PA2428_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PA2428.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2428/PA2428_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2428/PA2428.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PA2428/PA2428_PAO1_IP1.nucl.fsa
+
+
+##PflA506_4424
+##tblastn 用蛋白序列和数据库中核酸序列的6框翻译后蛋白序列比对	
+    tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PflA506_4424.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PflA506_4424/PflA506_4424_PAO1_IP1.txt
+	
+	tblastn -query /home/wnq13579/genomic_sequencing/blast/queries/pyoverdin/PflA506_4424.fsa \
+	-db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-outfmt "7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sstart send sseq" \
+    -out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PflA506_4424/PflA506_4424_PAO1_IP1.tab.csv
+ 
+
+blastdbcmd -db /home/wnq13579/genomic_sequencing/blast/blastdb_custom/PAO1_IP1/db_PAO1_IP1 \
+	-entry_batch /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PflA506_4424/PflA506_4424.PAO1_IP1.tblastn.entry_batch.csv \
+	-outfmt "%f" \
+	-out /home/wnq13579/genomic_sequencing/blast/results/pyoverdin_PAO1_IP1/PflA506_4424/PA2428_PAO1_IP1.nucl.fsa
+
+
+
+
+
+
+
+
+
+
+

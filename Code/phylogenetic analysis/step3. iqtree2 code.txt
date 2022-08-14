@@ -1,0 +1,15 @@
+# in Linux
+conda activate iqtree2
+iqtree -s mafft.fsa.Pseudomonas_genome_db_IP1 \
+    -nt AUTO \
+    -st AA \
+	-B 1000 \
+	-alrt 1000
+
+PA5568.mafft-24.fsa
+
+iqtree -s PA5568.mafft-24-renamed.fsa \
+    -nt AUTO \
+    -st AA \
+	-B 1000 \
+	-alrt 1000

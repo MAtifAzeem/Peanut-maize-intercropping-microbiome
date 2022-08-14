@@ -118,8 +118,8 @@ NormalPotPeanutYLSPAD_summary
 
 ### 7.3 Statistic analysis ###
 #Statistic analysis by days post sowing(dps)
-compare_means(data=NormalPotPeanutYLSPAD,YL_SPAD~SystemSpeciesDays,method = "t.test")
-
+aa<-compare_means(data=NormalPotPeanutYLSPAD,YL_SPAD~SystemSpeciesDays,method = "t.test")
+aa
 #### 8. Fig. 1e Peanut-Intercropping-Pot-Fe status ####
 ### 8.1 Import and process data ###
 setwd(wdImport)
@@ -131,6 +131,9 @@ NormalPotPeanutFe$SystemSpecies <- factor(NormalPotPeanutFe$SystemSpecies,levels
 
 ### 8.2 Fig.1E Peanut-Intercropping-Pot-Active Fe concentration in young leaves ###
 ## 8.2.1 Statistic analysis ##
+bb<-compare_means(data=NormalPotPeanutFe,YL_ActiveFe~SystemSpeciesDays,method = "t.test")
+bb
+
 AvailableFe_aov<-aov(data=NormalPotPeanutFe,AvailableFe~System+Days+Days*System)
 summary(AvailableFe_aov)
 AvailableFe_lm.fit<-lm(data=NormalPotPeanutFe, AvailableFe~System*Days)
