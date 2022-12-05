@@ -53,11 +53,11 @@ wdOutput_Figure5 <- c("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Figu
 #### 3.1 Import and process data ####
 setwd(wdImport)
 NIP_SPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig s10 SPAD of NIP")
+                             sheet = "fig s21 SPAD of NIP")
 NIP_SPAD$Treatment3<-factor(NIP_SPAD$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 NIP_Iron <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                  sheet = "fig s10 iron of NIP")
+                                  sheet = "fig s21 iron of NIP")
 NIP_Iron$Treatment3<-factor(NIP_Iron$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 #### 4 NIP ####

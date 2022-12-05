@@ -64,7 +64,8 @@ SterilePot_ActiveFe$Treatment3<-factor(SterilePot_ActiveFe$Treatment3,levels=c("
 SterilePot_AvailableFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                                   sheet = "fig 4b availableFe in pot")
 SterilePot_AvailableFe$Treatment3<-factor(SterilePot_AvailableFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
-
+aa<-compare_means(data=SterilePot_AvailableFe,availableFe~Treatment,method = "t.test")
+View(aa)
 
 Field_SPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                          sheet = "fig 4d SPAD in field") 

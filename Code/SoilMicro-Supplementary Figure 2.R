@@ -73,11 +73,7 @@ Dfr_rhizo<-subset_samples(Dfr,Rhizocompartments=="Rhizosphere")
 #adonis
 Dfr_rhizo <- subset_samples(Dfr,Dfr@sam_data$Rhizocompartments=="Rhizosphere")
 Dfr_rhizo@sam_data$Species
-unifrac_dis_rhizo <- distance(Dfr_rhizo, method = 'unifrac')
 SampleData_rhizo <-SampleData
-adonis2(formula=unifrac_dis_rhizo ~ RhizocompartmentsSystemSpecies+Days+RhizocompartmentsSystemSpecies*Days, 
-        data=SampleData_rhizo,
-        permutations=9999)
 ASVCount_rhizo<-ASVCount
 tree=RootedTree_FourStages_rhizosphere_Filtered1
 amplicon::MicroTest(otu=ASVCount_rhizo,map=SampleData_rhizo,group="RhizocompartmentsSystemSpecies",
