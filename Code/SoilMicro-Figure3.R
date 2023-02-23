@@ -15,6 +15,7 @@ library(Cairo)#抗锯齿,anti-aliasing
 library(ggtree)
 library(rcompanion)#nonparametric two ways test
 library(psych)#correlation analysis
+library(ape)
 
 #### 2. Setting themes and working dictionary path ####
 loadfonts()
@@ -33,8 +34,8 @@ mytheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colou
                              axis.line = element_line(color = "#4D4D4D",size=0.2),
                              axis.ticks.length = unit(0.8, "mm"))
 
-mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",size=0.2),
-                              panel.background = element_rect(colour = "#4d4d4d",size=0.2),
+mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",linewidth=0.2),
+                              panel.background = element_rect(colour = "#4d4d4d",linewidth=0.2),
                               text = element_text(family = "Arial"),
                               strip.text = element_text(size = 5,hjust = 0.5),
                               plot.title = element_text(size = 5,hjust = 0.5),
@@ -49,10 +50,11 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
 wdImport<-("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
 wdOutput_Figure3 <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Figure3")
 
-#### 3. Fig. 4b-phylogenetic tree####
+#### 3. Fig. 3b-phylogenetic tree####
 ## 3.1 Import and process data ##
 setwd(wdImport)
 Rooted_tree_46Strains <- read.tree("Rooted_tree_46Strains_16s_sequence.nwk")
+View(Rooted_tree_46Strains)
 Rooted_tree_46Strains_Tib <-as_tibble(Rooted_tree_46Strains)
 class(Rooted_tree_46Strains)
 StrainScreeningName <- read_excel("Intercropping-microbiome-Data for submit.xlsx",sheet="fig 3b name")
@@ -89,7 +91,7 @@ setwd(wdOutput_Figure4)
 ggsave("Tree_46Strains_LineGroup.pdf",Tree_46Strains_LineGroup,device=cairo_pdf,width=140,height=140,dpi = 300,units = "mm")
 Tree_46Strains<-ggtree(Rooted_tree_46Strains, branch.length="none")+ geom_tiplab(align=TRUE)
 Tree_46Strains
-
+View(Rooted_tree_46Strains)
 ## 3.4 Mapping data to the tree structure ##
 setwd(wdImport)
 SiderophoreProduction <- read_excel("Intercropping-microbiome-Data for submit.xlsx",sheet="fig 3b SiderophoreProduction")
@@ -115,7 +117,7 @@ SiderophoreProduction_Bar
 Tree_46Strains
 Composite_plots_46Strains<-SiderophoreProduction_Bar %>% insert_left(Tree_46Strains_LineGroup,width=6)
 Composite_plots_46Strains
-setwd(wdOutput_Figure4)
+setwd(wdOutput_Figure3)
 ggsave("Composite_plots_46Strains.pdf",Composite_plots_46Strains,device=cairo_pdf,width=140,height=140,dpi = 300,units = "mm")
 wdOutput
 
@@ -145,7 +147,7 @@ ASV487_Percent_Maize_Pots<-ggplot(ASV487_Percent_Maize, aes(x=Days, y=Percent, f
   mytheme1
 
 ASV487_Percent_Maize_Pots
-setwd(wdOutput_Figure4)
+setwd(wdOutput_Figure3)
 ggsave(paste("ASV487_Percent_Maize_Pots",".pdf",sep=""),ASV487_Percent_Maize_Pots,device=cairo_pdf,width=80,height=40,dpi = 300,units = "mm")
 
 #### 5. Peanut-ASV487-Percent-Pot2020 ####
@@ -176,7 +178,7 @@ ASV487_Percent_Peanut_Pots<-ggplot(ASV487_Percent_Peanut, aes(x=Days, y=Percent,
   mytheme1
 
 ASV487_Percent_Peanut_Pots
-setwd(wdOutput_Figure4)
+setwd(wdOutput_Figure3)
 ggsave(paste("ASV487_Percent_Peanut_Pots",".pdf",sep=""),ASV487_Percent_Peanut_Pots,device=cairo_pdf,width=80,height=40,dpi = 300,units = "mm")
 
 #### 6. Pyovdine solublize Fe ####
@@ -193,13 +195,15 @@ Solubilize_Fe_pyoverdine_Fe<-corr.test(Solubilize_Fe$Additon_sid_nmol,Solubilize
 Solubilize_Fe_pyoverdine_Fe
 Solubilize_Fe_pyoverdine_Fe$r
 Solubilize_Fe_pyoverdine_Fe$p
+Solubilize_Fe_pyoverdine_Fe$p.adj
 ## 6.3 Plots ##
-Solubilize_Fe_density <- ggplot(Solubilize_Fe,aes(x=Additon_sid_nmol,y=Iron_content_nmol))+
-  geom_point(color="#33a02c")+
-  geom_density2d(color="#6a3d9a")+stat_smooth(method = lm,color="#6a3d9a")+
+Solubilize_Fe_line <- ggplot(Solubilize_Fe,aes(x=Additon_sid_nmol,y=Iron_content_nmol))+
+  geom_point(color="#33a02c",size=0.5,shape=21)+
+  stat_smooth(method = lm,color="#6a3d9a")+
   mytheme1
-Solubilize_Fe_density
-setwd(wdOutput_Figure4)
+Solubilize_Fe_line
+setwd(wdOutput_Figure3)
 getwd()
-ggsave(paste("Solubilize_Fe_density",".pdf",sep=""),
-       Solubilize_Fe_density,device=cairo_pdf,width=120,height=40,dpi = 300,units = "mm")
+ggsave(paste("Solubilize_Fe_line",".pdf",sep=""),
+       Solubilize_Fe_line,device=cairo_pdf,width=120,height=40,dpi = 300,units = "mm")
+

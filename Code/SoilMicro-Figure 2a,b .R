@@ -22,7 +22,7 @@ library(psych)#correlationship analysis#
 loadfonts()
 Sys.setenv(R_GSCMD = "C:/Program Files (x86)/gs/gs9.50/bin/gswin32c.exe")
 
-mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",size=0.2),
+mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",linewidth=0.2),
                               panel.background = element_rect(colour = "#4d4d4d",size=0.2),
                               text = element_text(family = "Arial"),
                               strip.text = element_text(size = 6,hjust = 0.5),
@@ -33,10 +33,10 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
                               legend.title = element_text(size = 6),
                               legend.background = element_blank(),
                               panel.border = element_rect(colour = NA),
-                              axis.line = element_line(color = "#4D4D4D",size=0.2),
+                              axis.line = element_line(color = "#4D4D4D",linewidth=0.2),
                               axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
 
-mytheme_bigfonts <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",size=0.2),
+mytheme_bigfonts <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",linewidth=0.2),
                               panel.background = element_rect(colour = "#4d4d4d",size=0.2),
                               text = element_text(family = "Arial"),
                               strip.text = element_text(size = 9,hjust = 0.5),
@@ -47,7 +47,7 @@ mytheme_bigfonts <- theme_few()+theme(strip.background = element_rect(fill="gray
                               legend.title = element_text(size = 9),
                               legend.background = element_blank(),
                               panel.border = element_rect(colour = NA),
-                              axis.line = element_line(color = "#4D4D4D",size=0.2),
+                              axis.line = element_line(color = "#4D4D4D",linewidth=0.2),
                               axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
 
 wdImport<-("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
@@ -247,6 +247,7 @@ genus_biomarker_peanut_activeFe_cor<-corr.test(genus_biomarker_peanut$YLActiveFe
                                                method="spearman",adjust="BH",minlength=5)
 genus_biomarker_peanut_activeFe_cor$r
 genus_biomarker_peanut_activeFe_cor$p
+genus_biomarker_peanut_activeFe_cor$p.adj
 genus_biomarker_peanut_AvailableFe_cor<-corr.test(genus_biomarker_peanut$AvailableFe,genus_biomarker_peanut[,14:length(genus_biomarker_peanut[1,])],
                                                   method="spearman",adjust="BH",minlength=5)
 genus_biomarker_peanut_AvailableFe_cor$r

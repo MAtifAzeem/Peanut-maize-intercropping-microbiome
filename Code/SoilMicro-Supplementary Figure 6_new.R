@@ -12,7 +12,6 @@ library(showtext)#字体设置, font setting
 library(extrafont)#使用系统字体，Using the system fonts
 library(sysfonts)#加载系统字体，loading the system fonts
 library(Cairo)#抗锯齿,anti-aliasing
-library(ComplexHeatmap)#heatmapping
 library(pheatmap)#heatmapping
 library(cluster)#hierarchical clustering
 library(psych)#correlationship analysis#
@@ -46,26 +45,44 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
                               legend.title = element_text(size = 5),
                               legend.background = element_blank(),
                               axis.line = element_line(color = "#4D4D4D",size=0.2),
-                              axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
-
+                              axis.ticks.length = unit(0.8, "mm"))
 wdImport<-("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
-wdOutput_Figure3 <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Figure3")
+wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/peanut_activeFe_available_cor_line")
 
-#### 3. Fig. 3a-LefSe_MPvsIP_results####
-### 3.1 Import and process data ###
+#### 3 Import and process data ####
 setwd(wdImport)
-LefSe_MPvsIP <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                    sheet = "fig s4")
-LefSe_MPvsIP$ID<-factor(LefSe_MPvsIP$ID,levels=LefSe_MPvsIP$ID)
-### 3.2 Plots ###
-LefSe_MPvsIP_LDA <- ggplot(LefSe_MPvsIP,aes(x=ID, y=LDA_plus_minus, fill=group)) + 
-  geom_bar(stat="identity", position="identity",width = 0.8,color="black",size=0.1)+
-  scale_fill_manual(values=c("#E31A1C","#1F78B4"))+
-  scale_y_continuous(breaks = c(-4,-3,-2,-1,0,1,2,3,4))+
-  mytheme1+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-LefSe_MPvsIP_LDA
-setwd(wdOutput_Figure3)
 getwd()
-ggsave(paste("LefSe_MPvsIP_LDA_3.0_p0.05",".pdf",sep=""),
-       LefSe_MPvsIP_LDA,device=cairo_pdf,width=140,height=90,dpi = 600,units = "mm")
+Iron <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                             sheet = "fig s6")
+
+peanut_activeFe_available_cor<-corr.test(Iron$YL_ActiveFe,Iron$AvailableFe,
+                                              method="pearson",adjust="BH",minlength=5)
+peanut_activeFe_available_cor
+peanut_activeFe_available_cor$r
+peanut_activeFe_available_cor$p
+
+##plots
+peanut_activeFe_available_cor_line <- ggplot(Iron, aes(x= AvailableFe, y= YL_ActiveFe))+
+  geom_point(color="#E64B35")+
+  geom_smooth(method = "lm",color="#E64B35")+
+  stat_regline_equation(label.x = 3, label.y = 14)+
+  mytheme
+peanut_activeFe_available_cor_line
+
+formula <- y ~ x
+peanut_activeFe_available_cor_line <- ggplot(Iron, aes(x= AvailableFe, y= YL_ActiveFe))+
+  geom_point(color="#E64B35")+
+  geom_smooth(method = "lm",color="#E64B35")+
+  stat_regline_equation(
+    aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+    formula = formula,label.x = 3,label.y = 14) +
+  stat_cor (method = "pearson",
+            label.x = 3)+
+  mytheme
+peanut_activeFe_available_cor_line
+setwd(wdOutput)
+getwd()
+ggsave(paste("peanut_activeFe_available_cor_line",data.set.name,".pdf",sep=""),
+       peanut_activeFe_available_cor_line,
+       device=cairo_pdf,width=80,height=60,dpi = 600,units = "mm")
+

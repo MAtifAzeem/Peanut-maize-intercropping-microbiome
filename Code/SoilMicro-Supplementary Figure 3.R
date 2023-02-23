@@ -4,22 +4,37 @@ library(ggpubr)#添加显著性标记, Add the significance marker
 library(ggsignif)#添加显著性标记, Add the significance marker
 library(dplyr)#数据清洗，Data cleaning
 library(plyr)#数据清洗，Data cleaning
+library(reshape2)#数据清洗，Data cleaning
 library(ggthemes)#ggplot所用主题，Themes for ggplot2
+library(ggsci)#TOP期刊配色方案, color plates from top journal
 library(readxl)#读入 excel, read excel
-library(ggsci)#配色，color scheme
 library(showtext)#字体设置, font setting
 library(extrafont)#使用系统字体，Using the system fonts
 library(sysfonts)#加载系统字体，loading the system fonts
 library(Cairo)#抗锯齿,anti-aliasing
-library(ape)
-library(phyloseq)#microbiome analysis
-library(vegan)#Adonis analysis
+library(agricolae)#多重比较，Multiple comparisons.
+library(rcompanion)
+library(car)
+
 #### 2. Setting themes and working dictionary path ####
 loadfonts()
 Sys.setenv(R_GSCMD = "C:/Program Files (x86)/gs/gs9.50/bin/gswin32c.exe")
 
-mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",size=0.2),
-                              panel.background = element_rect(colour = "#4d4d4d",size=0.2),
+mytheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d"),
+                             text = element_text(family = "Arial"),
+                             strip.text = element_text(size = 6,hjust = 0.5),
+                             plot.title = element_text(size = 6,hjust = 0.5),
+                             axis.text=element_text(size=6,color = "#4D4D4D"),
+                             axis.title=element_text(size = 6),
+                             legend.text = element_text(size = 6),
+                             legend.title = element_text(size = 6),
+                             legend.background = element_blank(),
+                             panel.border = element_rect(colour = NA),
+                             axis.line = element_line(color = "#4D4D4D",size=0.2),
+                             axis.ticks.length = unit(0.8, "mm"))
+
+mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",linewidth=0.2),
+                              panel.background = element_rect(colour = "#4d4d4d",linewidth=0.2),
                               text = element_text(family = "Arial"),
                               strip.text = element_text(size = 6,hjust = 0.5),
                               plot.title = element_text(size = 6,hjust = 0.5),
@@ -28,76 +43,131 @@ mytheme1 <- theme_few()+theme(strip.background = element_rect(fill="gray72",colo
                               legend.text = element_text(size = 6),
                               legend.title = element_text(size = 6),
                               legend.background = element_blank(),
-                              panel.border = element_rect(colour = NA),
                               axis.line = element_line(color = "#4D4D4D",size=0.2),
-                              axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
-
-mytheme_bigfonts <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#4d4d4d",size=0.2),
-                                      panel.background = element_rect(colour = "#4d4d4d",size=0.2),
-                                      text = element_text(family = "Arial"),
-                                      strip.text = element_text(size = 9,hjust = 0.5),
-                                      plot.title = element_text(size = 9,hjust = 0.5),
-                                      axis.text=element_text(size=9,color = "#4D4D4D"),
-                                      axis.title=element_text(size = 9),
-                                      legend.text = element_text(size = 9),
-                                      legend.title = element_text(size = 9),
-                                      legend.background = element_blank(),
-                                      panel.border = element_rect(colour = NA),
-                                      axis.line = element_line(color = "#4D4D4D",size=0.2),
-                                      axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
+                              axis.ticks.length = unit(0.8, "mm"))
 
 wdImport<-("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
-wdOutput<- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials")
-data.set.name = '_FourStages_rhizosphere_DAD2_F295_R205_Filtered1' 
+wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/αdiversity_similarity")
 
-
-#### 3 Import and process data ####
+#### 4. Fig. s3a αdiversity ####
+### 4.1 Import and process data ###
 setwd(wdImport)
-ASVCount <- read.table("feature_table_FourStages_rhizosphere_DAD2_F295_R205_Filtered1.txt",header=T,row.names = 1,na.strings = c("NA"))
-SampleData <- read.table("FourStages_rhizosphere_SampleData.txt",header=T,row.names = 1,na.strings = c("NA"))
-colnames(ASVCount)<- row.names(SampleData)
-RootedTree_FourStages_rhizosphere_Filtered1<- read.tree("rooted_tree_FourStages_rhizosphere_DAD2_F295_R205_Filtered1.nwk")
-Df <- phyloseq(otu_table(ASVCount, taxa_are_rows = T),sample_data(SampleData),phy_tree(RootedTree_FourStages_rhizosphere_Filtered1))
-Df
-Dfr <-transform_sample_counts(Df, function(x) x / sum(x) )
-unifrac_PCoA <- ordinate(Dfr, "PCoA", "unifrac")
-unifrac_PCoA_Vector<-as.data.frame(unifrac_PCoA$vectors)
-setwd(wdOutput)
-write.table(unifrac_PCoA_Vector, paste("unifrac_vector",data.set.name,".txt",sep=""), col.names = NA, sep = '\t', quote = FALSE)
-sample_data(Dfr)$RhizocompartmentsSystemSpecies <- factor(sample_data(Dfr)$RhizocompartmentsSystemSpecies,level=c("Bulk","MP","IP","IM","MM"))
-sample_data(Dfr)$Species <- factor(sample_data(Dfr)$Species,level=c("Bulk","Peanut","Maize"))
-sample_data(Dfr)$Days<-factor(sample_data(Dfr)$Days)
-Dfr_rhizo<-subset_samples(Dfr,Rhizocompartments=="Rhizosphere")
+alpha_diversity <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                                    sheet = "fig s3 α diversity")
 
-#### 4. Rhizo ####
-#adonis
-Dfr_rhizo <- subset_samples(Dfr,Dfr@sam_data$Rhizocompartments=="Rhizosphere")
-Dfr_rhizo@sam_data$Species
-SampleData_rhizo <-SampleData
-ASVCount_rhizo<-ASVCount
-tree=RootedTree_FourStages_rhizosphere_Filtered1
-amplicon::MicroTest(otu=ASVCount_rhizo,map=SampleData_rhizo,group="RhizocompartmentsSystemSpecies",
-                    Micromet="anosim",dist="unifrac")
+alpha_diversity$Species <- factor(alpha_diversity$Species,levels = c("Peanut","Maize"))
+alpha_diversity$System <- factor(alpha_diversity$System,levels = c("Intercropping","Monocropping"))
+alpha_diversity$SystemSpecies <- factor(alpha_diversity$SystemSpecies,levels = c("IP","MP","IM","MM"))
 
-#plots#
-Dfr_rhizo <- subset_samples(Dfr,Rhizocompartments=="Rhizosphere")
-sample_data(Dfr_rhizo)$RhizocompartmentsSystemSpecies<-factor(sample_data(Dfr_rhizo)$RhizocompartmentsSystemSpecies,level=c("MP","IP","IM","MM"))
-unifrac_PCoA <- ordinate(Dfr_rhizo, method="PCoA", distance="unifrac")
-sample_data(Dfr_rhizo)$Days<-factor(sample_data(Dfr_rhizo)$Days)
-unifrac_PCoAPoints_rhizo <- plot_ordination(Dfr_rhizo, unifrac_PCoA,shape = "Days", color="RhizocompartmentsSystemSpecies" )+
-  guides(color=guide_legend(title=NULL),shape=guide_legend(title=NULL))+geom_point(size=1)+
-  scale_x_continuous(limits=c(-0.4,0.22),breaks=c(-0.2,0.0,0.2))+
-  scale_y_continuous(limits=c(-0.25,0.4),breaks=c(-0.2,0.0,0.2,0.3))+
-  scale_color_manual(values = c("#4D78B2","#BE1A17","#E19896","#B3CDE2"))+
-  scale_shape_few()+
-  mytheme1
-unifrac_PCoAPoints_rhizo
+### 4.1 chao1_Peanut ###
+## 4.1.1 Statistic analysis ##
+alpha_diversity_Peanut <- alpha_diversity%>%filter(Species=="Peanut")
+scheirerRayHare(data=alpha_diversity_Peanut, chao1~System*Days)
+
+## 4.1.2 Plots ##
+chao1_Peanut_line<-ggplot(alpha_diversity_Peanut, aes(x=Days, y=chao1, fill=SystemSpecies,group=SystemSpecies)) +
+  stat_summary(fun.data="mean_cl_boot", geom="ribbon",
+               alpha=I(.2)) +
+  stat_summary(fun="mean", geom="line",size=0.5,aes(col=SystemSpecies)) +
+  stat_summary(fun="mean", geom="point",size=0.5,aes(col=SystemSpecies)) +
+  mytheme1+
+  scale_x_continuous(breaks=c(46,53,63,73),limits=c(38,80))+
+  scale_y_continuous(limits=c(0,3500))+
+  labs(x="dps",
+       y="chao1",parse =T)+
+  scale_color_npg()+scale_fill_npg()+
+  theme(legend.position = "top")+
+  guides(fill=guide_legend(title=NULL),color=guide_legend(title=NULL))
+chao1_Peanut_line
 setwd(wdOutput)
 getwd()
-ggsave(paste("unifrac_PCoAPoints_rhizo",data.set.name,".pdf",sep=""),unifrac_PCoAPoints_rhizo,
-       device=cairo_pdf,width=160,height=70,dpi = 600,units = "mm")
+ggsave("chao1_Peanut_line.pdf",
+       chao1_Peanut_line,
+       device=cairo_pdf,width=40,height=50,dpi = 300,units = "mm")
 
-#### 4.unifrac_similarity ####
+### 4.2 chao1_Peanut ###
+## 4.2.1 Statistic analysis ##
+alpha_diversity_Peanut <- alpha_diversity%>%filter(Species=="Peanut")
+scheirerRayHare(data=alpha_diversity_Peanut, shannon~System*Days)
+
+## 4.2.2 Plots ##
+shannon_Peanut_line<-ggplot(alpha_diversity_Peanut, aes(x=Days, y=shannon, fill=SystemSpecies,group=SystemSpecies)) +
+  stat_summary(fun.data="mean_cl_boot", geom="ribbon",
+               alpha=I(.2)) +
+  stat_summary(fun="mean", geom="line",size=0.5,aes(col=SystemSpecies)) +
+  stat_summary(fun="mean", geom="point",size=0.5,aes(col=SystemSpecies)) +
+  mytheme1+
+  scale_x_continuous(breaks=c(46,53,63,73),limits=c(38,80))+
+  scale_y_continuous(limits=c(0,11))+
+  labs(x="dps",
+       y="chao1",parse =T)+
+  scale_color_npg()+scale_fill_npg()+
+  theme(legend.position = "top")+
+  guides(fill=guide_legend(title=NULL),color=guide_legend(title=NULL))
+shannon_Peanut_line
+setwd(wdOutput)
+getwd()
+ggsave("shannon_Peanut_line.pdf",
+       shannon_Peanut_line,
+       device=cairo_pdf,width=40,height=53,dpi = 300,units = "mm")
+
+### 4.3 chao1_Maize ###
+## 4.3.1 Statistic analysis ##
+alpha_diversity_Maize <- alpha_diversity%>%filter(Species=="Maize")
+scheirerRayHare(data=alpha_diversity_Maize, chao1~System*Days)
+
+## 4.3.2 Plots ##
+chao1_Maize_line<-ggplot(alpha_diversity_Maize, aes(x=Days, y=chao1, fill=SystemSpecies,group=SystemSpecies)) +
+  stat_summary(fun.data="mean_cl_boot", geom="ribbon",
+               alpha=I(.2)) +
+  stat_summary(fun="mean", geom="line",size=0.5,aes(col=SystemSpecies)) +
+  stat_summary(fun="mean", geom="point",size=0.5,aes(col=SystemSpecies)) +
+  mytheme1+
+  scale_x_continuous(breaks=c(46,53,63,73),limits=c(38,80))+
+  scale_y_continuous(limits=c(0,3500))+
+  labs(x="dps",
+       y="chao1",parse =T)+
+  scale_color_npg()+scale_fill_npg()+
+  theme(legend.position = "top")+
+  guides(fill=guide_legend(title=NULL),color=guide_legend(title=NULL))
+chao1_Maize_line
+setwd(wdOutput)
+getwd()
+ggsave("chao1_Maize_line.pdf",
+       chao1_Maize_line,
+       device=cairo_pdf,width=40,height=50,dpi = 300,units = "mm")
+
+### 4.4 chao1_Maize ###
+## 4.4.1 Statistic analysis ##
+alpha_diversity_Maize <- alpha_diversity%>%filter(Species=="Maize")
+scheirerRayHare(data=alpha_diversity_Maize, shannon~System*Days)
+
+## 4.4.2 Plots ##
+shannon_Maize_line<-ggplot(alpha_diversity_Maize, aes(x=Days, y=shannon, fill=SystemSpecies,group=SystemSpecies)) +
+  stat_summary(fun.data="mean_cl_boot", geom="ribbon",
+               alpha=I(.2)) +
+  stat_summary(fun="mean", geom="line",size=0.5,aes(col=SystemSpecies)) +
+  stat_summary(fun="mean", geom="point",size=0.5,aes(col=SystemSpecies)) +
+  mytheme1+
+  scale_x_continuous(breaks=c(46,53,63,73),limits=c(38,80))+
+  scale_y_continuous(limits=c(0,11))+
+  labs(x="dps",
+       y="chao1",parse =T)+
+  scale_color_npg()+scale_fill_npg()+
+  theme(legend.position = "top")+
+  guides(fill=guide_legend(title=NULL),color=guide_legend(title=NULL))
+shannon_Maize_line
+setwd(wdOutput)
+getwd()
+ggsave("shannon_Maize_line.pdf",
+       shannon_Maize_line,
+       device=cairo_pdf,width=40,height=53,dpi = 300,units = "mm")
+
+data.set.name = '_FourStages_rhizosphere_DAD2_F295_R205_Filtered1' 
+
+#### 5. Fig. s3b similarity ####
+data.set.name = '_FourStages_rhizosphere_DAD2_F295_R205_Filtered1'
+#### 5.1.unifrac_similarity ####
 ### 46 days ###
 ## unifrac_distance_46days ##
 setwd(wdImport)
@@ -197,14 +267,14 @@ IPvsIM_MPvsMM_unifrac_sim$VS <- factor(IPvsIM_MPvsMM_unifrac_sim$VS,levels = c("
 
 IPvsIM_MPvsMM_unifrac_simPointLM <- ggplot(IPvsIM_MPvsMM_unifrac_sim,aes(factor(Days),Similarity,group=VS))+
   geom_point(aes(color=VS),size=0.1,position=position_dodge(0.15),stat="identity")+
-  stat_smooth(aes(color=VS,fill=VS),method = loess,
+  stat_smooth(aes(color=VS,fill=VS),method =  stats::loess,
               size=0.5,position=position_dodge(0.15),alpha=0.1,span=2)+
   mytheme1+
   theme(legend.title = element_blank(),legend.key.width=unit(3,'mm'))+
-  scale_y_continuous(limits = c(0.3,0.75),breaks=c(0.4,0.5,0.6,0.7))+
+  scale_y_continuous(limits = c(0,0.62))+
   scale_color_npg()+scale_fill_npg()+
   xlab("Days")+ylab("unifrac-Curits Similarity")+
-  guides(color=FALSE)
+  guides(color="none")
 IPvsIM_MPvsMM_unifrac_simPointLM
 setwd(wdOutput)
 getwd()

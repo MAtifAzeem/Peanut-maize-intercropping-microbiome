@@ -19,7 +19,9 @@ library(stringr)#字符串处理.string manipulation
 library(graphics)#坐标轴表达式，expression for axis
 library(vegan)
 library(data.table)
-
+library(rcompanion)
+library(forecast)#box-cox数据变换
+library(PMCMRplus)
 #### 2. setting theme and filepath ####
 loadfonts()
 Sys.setenv(R_GSCMD = "C:/Program Files (x86)/gs/gs9.50/bin/gswin32c.exe")
@@ -60,12 +62,13 @@ SterilePot_ActiveFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx
                                   sheet = "fig 4b activeFe in pot")
 SterilePot_ActiveFe$Treatment3<-factor(SterilePot_ActiveFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
+SterilePot_Biomass<-read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                               sheet = "fig 4b biomass in pot")
+SterilePot_Biomass$Treatment3<-factor(SterilePot_Biomass$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 SterilePot_AvailableFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                                   sheet = "fig 4b availableFe in pot")
 SterilePot_AvailableFe$Treatment3<-factor(SterilePot_AvailableFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
-aa<-compare_means(data=SterilePot_AvailableFe,availableFe~Treatment,method = "t.test")
-View(aa)
 
 Field_SPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
                          sheet = "fig 4d SPAD in field") 
@@ -84,23 +87,29 @@ Field_Yield$Treatment<-factor(Field_Yield$Treatment,levels=c("CK","1502IPR-01","
 ## 4.1 SIP-SPAD ###
 SIP_SPAD<-SterilePotSPAD%>%filter(Treatment2=="SIP")
 # 4.1.1 statistical analysis #
-compare_means(data=SIP_SPAD,YL_SPAD~Treatment3,method = "t.test")
-aov_model_SIP_SPAD<-aov(data=SIP_SPAD,YL_SPAD~Treatment3)
+leveneTest(YL_SPAD ~ Treatment3, data = SIP_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(SIP_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+#BoxCox.lambda(PotSterilizationActiveFe$YL_ActiveFe,method="loglik")#a number indicating the Box-Cox transformation parameter
+SIP_SPAD<-SIP_SPAD%>%mutate(boxcox_YL_SPAD =BoxCox(SIP_SPAD$YL_SPAD,lambda="auto"))
+leveneTest(boxcox_YL_SPAD ~ Treatment3, data = SIP_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(SIP_SPAD$boxcox_YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SIP_SPAD<-aov(data=SIP_SPAD,boxcox_YL_SPAD~Treatment3)
 summary(aov_model_SIP_SPAD)
-duncan_model_SIP_SPAD<- duncan.test(aov_model_SIP_SPAD,"Treatment3")
-duncan_model_SIP_SPAD
-
+#Non-parameter test
+kruskal.test(YL_SPAD~Treatment3, data = SIP_SPAD)
+aov_model_SIP_SPAD<-aov(data=SIP_SPAD,YL_SPAD~Treatment3)
+dunnettT3Test(aov_model_SIP_SPAD,p.adjust.method = "BH")
 # 4.1.2 Plots #
 SIP_SPAD_Bar<-ggplot(SIP_SPAD,aes(Treatment3,YL_SPAD))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",y='SPAD')+
   scale_y_continuous(limits = c(0,40))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 SIP_SPAD_Bar
 setwd(wdOutput_Figure4)
 getwd()
@@ -111,51 +120,84 @@ ggsave(paste("SIP_SPAD_Bar",".pdf",sep=""),
 SIP_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="SIP")
 SIP_ActiveFe
 # 4.2.1 statistical analysis #
-compare_means(data=SIP_ActiveFe,YL_ActiveFe~Treatment3,method = "t.test")
+leveneTest(YL_ActiveFe ~ Treatment3, data = SIP_ActiveFe)#p>0.05，则满足方差齐性
+shapiro.test(SIP_ActiveFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_SIP_ActiveFe<-aov(data=SIP_ActiveFe,YL_ActiveFe~Treatment3)
 summary(aov_model_SIP_ActiveFe)
-duncan_result_SIP_ActiveFe<- duncan.test(aov_model_SIP_ActiveFe,"Treatment3")
-duncan_result_SIP_ActiveFe
+LSD_model_SIP_ActiveFe<-LSD.test(aov_model_SIP_ActiveFe,"Treatment3",p.adj = "BH")
+LSD_model_SIP_ActiveFe
 
 # 4.2.2 statistical analysis #
 SIP_YL_ActiveFe_Bar<-ggplot(SIP_ActiveFe,aes(Treatment3,YL_ActiveFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,7))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 SIP_YL_ActiveFe_Bar
 setwd(wdOutput_Figure4)
 getwd()
 ggsave(paste("SIP_YL_ActiveFe_Bar",".pdf",sep=""),
        SIP_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
 
-## 4.3 SIP-AvailableFe ###
-SIP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="SIP")
+## 4.3 SIP-biomass ###
+SIP_Biomass<-SterilePot_Biomass%>%filter(Treatment2=="SIP")
 # 4.3.1 statistical analysis #
-compare_means(data=SIP_AvailableFe,availableFe~Treatment3,method = "t.test")
-aov_model_SIP_AvailableFe<-aov(data=SIP_AvailableFe,availableFe~Treatment3)
-summary(aov_model_SIP_AvailableFe)
-duncan_model_SIP_AvailableFe<- duncan.test(aov_model_SIP_AvailableFe,"Treatment3")
-duncan_model_SIP_AvailableFe
+leveneTest(Total ~ Treatment3, data = SIP_Biomass)#p>0.05，则满足方差齐性
+shapiro.test(SIP_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+SIP_Biomass<-SIP_Biomass%>%mutate(boxcox_Total =BoxCox(SIP_Biomass$Total,lambda="auto"))
+leveneTest(boxcox_Total ~ Treatment3, data = SIP_Biomass)#p>0.05，则满足方差齐性
+shapiro.test(SIP_Biomass$boxcox_Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SIP_Biomass<-aov(data=SIP_Biomass,boxcox_Total~Treatment3)
+summary(aov_model_SIP_Biomass)
+LSD_model_SIP_Biomass<-LSD.test(aov_model_SIP_Biomass,"Treatment3",p.adj = "BH")
+LSD_model_SIP_Biomass
 
 # 4.3.2 Plots #
-SIP_AvailableFe_Bar<-ggplot(SIP_AvailableFe,aes(Treatment3,availableFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+SIP_Biomass_Bar<-ggplot(SIP_Biomass,aes(Treatment3,Total))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",
+       y="Biomas (g/plant)",parse =T)+
+  scale_y_continuous(limits = c(0,15))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(fill="none")
+SIP_Biomass_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("SIP_Biomass_Bar",".pdf",sep=""),
+       SIP_Biomass_Bar,device=cairo_pdf,width=50,height=59,dpi = 300,units = "mm")
+
+## 4.4 SIP-AvailableFe ###
+SIP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="SIP")
+# 4.4.1 statistical analysis #
+leveneTest(availableFe ~ Treatment3, data = SIP_AvailableFe)#p>0.05，则满足方差齐性
+shapiro.test(SIP_AvailableFe$availableFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SIP_AvailableFe<-aov(data=SIP_AvailableFe,availableFe~Treatment3)
+summary(aov_model_SIP_AvailableFe)
+LSD_model_SIP_AvailableFe<-LSD.test(aov_model_SIP_AvailableFe,"Treatment3",p.adj = "BH")
+LSD_model_SIP_AvailableFe
+
+# 4.4.2 Plots #
+SIP_AvailableFe_Bar<-ggplot(SIP_AvailableFe,aes(Treatment3,availableFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
   labs(x="",
        y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,8))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 SIP_AvailableFe_Bar
 setwd(wdOutput_Figure4)
 getwd()
@@ -166,25 +208,27 @@ ggsave(paste("SIP_AvailableFe_Bar",".pdf",sep=""),
 ## 5.2.1 SMP-SPAD ###
 SMP_SPAD<-SterilePotSPAD%>%filter(Treatment2=="SMP")
 # 5.2.1.1 statistical analysis #
-shapiro.test(SMP_SPAD$YL_SPAD)#normal test
-compare_means(data=SMP_SPAD,YL_SPAD~Treatment3,method = "t.test")
-aov_model_SMP_SPAD<-aov(data=SMP_SPAD,YL_SPAD~Treatment3)
+leveneTest(YL_SPAD ~ Treatment3, data = SMP_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(SMP_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+SMP_SPAD<-SMP_SPAD%>%mutate(boxcox_YL_SPAD =BoxCox(SMP_SPAD$YL_SPAD,lambda="auto"))
+leveneTest(boxcox_YL_SPAD ~ Treatment3, data = SMP_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(SMP_SPAD$boxcox_YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SMP_SPAD<-aov(data=SMP_SPAD,boxcox_YL_SPAD~Treatment3)
 summary(aov_model_SMP_SPAD)
-duncan_result_SMP_SPAD<- duncan.test(aov_model_SMP_SPAD,"Treatment3")
-duncan_result_SMP_SPAD
-
+LSD_model_SMP_SPAD<-LSD.test(aov_model_SMP_SPAD,"Treatment3",p.adj = "BH")
+LSD_model_SMP_SPAD
 
 # 5.2.1.2 Plots #
 SMP_SPAD_Bar<-ggplot(SMP_SPAD,aes(Treatment3,YL_SPAD))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",y='SPAD')+
-  scale_y_continuous(limits = c(0,50))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_y_continuous(limits = c(0,40))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 SMP_SPAD_Bar
 setwd(wdOutput_Figure4)
 getwd()
@@ -194,52 +238,81 @@ ggsave(paste("SMP_SPAD_Bar",".pdf",sep=""),
 ## 5.2.2 SMP-Acitve Fe ###
 SMP_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="SMP")
 # 5.2.2.1 statistical analysis #
-compare_means(data=SMP_ActiveFe,YL_ActiveFe~Treatment3,method = "t.test")
+leveneTest(YL_ActiveFe ~ Treatment3, data = SMP_ActiveFe)#p>0.05，则满足方差齐性
+shapiro.test(SMP_ActiveFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_SMP_ActiveFe<-aov(data=SMP_ActiveFe,YL_ActiveFe~Treatment3)
 summary(aov_model_SMP_ActiveFe)
-duncan_result_SMP_ActiveFe<- duncan.test(aov_model_SMP_ActiveFe,"Treatment3")
-duncan_result_SMP_ActiveFe
-
+LSD_model_SMP_ActiveFe<-LSD.test(aov_model_SMP_ActiveFe,"Treatment3",p.adj = "BH")
+LSD_model_SMP_ActiveFe
 
 # 5.2.2.2 statistical analysis #
 SMP_YL_ActiveFe_Bar<-ggplot(SMP_ActiveFe,aes(Treatment3,YL_ActiveFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,7))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 SMP_YL_ActiveFe_Bar
 setwd(wdOutput_Figure4)
 getwd()
 ggsave(paste("SMP_YL_ActiveFe_Bar",".pdf",sep=""),
        SMP_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
 
-## 5.3 SMP-AvailableFe ###
-SMP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="SMP")
+## 5.3 SMP-biomass ###
+SMP_Biomass<-SterilePot_Biomass%>%filter(Treatment2=="SMP")
 # 5.3.1 statistical analysis #
-compare_means(data=SMP_AvailableFe,availableFe~Treatment3,method = "t.test")
-aov_model_SMP_AvailableFe<-aov(data=SMP_AvailableFe,availableFe~Treatment3)
-summary(aov_model_SMP_AvailableFe)
-duncan_model_SMP_AvailableFe<- duncan.test(aov_model_SMP_AvailableFe,"Treatment3")
-duncan_model_SMP_AvailableFe
+leveneTest(Total ~ Treatment3, data = SMP_Biomass)#p>0.05，则满足方差齐性
+shapiro.test(SMP_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SMP_Biomass<-aov(data=SMP_Biomass,Total~Treatment3)
+summary(aov_model_SMP_Biomass)
+LSD_model_SMP_Biomass<-LSD.test(aov_model_SMP_Biomass,"Treatment3",p.adj = "BH")
+LSD_model_SMP_Biomass
 
 # 5.3.2 Plots #
-SMP_AvailableFe_Bar<-ggplot(SMP_AvailableFe,aes(Treatment3,availableFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+SMP_Biomass_Bar<-ggplot(SMP_Biomass,aes(Treatment3,Total))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",
+       y="Biomas (g/plant)",parse =T)+
+  scale_y_continuous(limits = c(0,15))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(fill="none")
+SMP_Biomass_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("SMP_Biomass_Bar",".pdf",sep=""),
+       SMP_Biomass_Bar,device=cairo_pdf,width=50,height=59,dpi = 300,units = "mm")
+
+## 5.4 SMP-AvailableFe ###
+SMP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="SMP")
+# 5.4.1 statistical analysis #
+leveneTest(availableFe ~ Treatment3, data = SMP_AvailableFe)#p>0.05，则满足方差齐性
+shapiro.test(SMP_AvailableFe$availableFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SMP_AvailableFe<-aov(data=SMP_AvailableFe,availableFe~Treatment3)
+summary(aov_model_SMP_AvailableFe)
+LSD_model_SMP_AvailableFe<-LSD.test(aov_model_SMP_AvailableFe,"Treatment3",p.adj = "BH")
+LSD_model_SMP_AvailableFe
+
+# 5.4.2 Plots #
+SMP_AvailableFe_Bar<-ggplot(SMP_AvailableFe,aes(Treatment3,availableFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
   labs(x="",
        y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,8))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 SMP_AvailableFe_Bar
 setwd(wdOutput_Figure4)
 getwd()
@@ -250,23 +323,29 @@ ggsave(paste("SMP_AvailableFe_Bar",".pdf",sep=""),
 ## 6.1 NMP-SPAD ###
 NMP_SPAD<-SterilePotSPAD%>%filter(Treatment2=="NMP")
 # 6.1.1 statistical analysis #
-compare_means(data=NMP_SPAD,YL_SPAD~Treatment3,method = "t.test")
-aov_model_NMP_SPAD<-aov(data=NMP_SPAD,YL_SPAD~Treatment3)
+leveneTest(YL_SPAD ~ Treatment3, data = NMP_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(NMP_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+NMP_SPAD<-NMP_SPAD%>%mutate(boxcox_YL_SPAD =BoxCox(NMP_SPAD$YL_SPAD,lambda="auto"))
+leveneTest(boxcox_YL_SPAD ~ Treatment3, data = NMP_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(NMP_SPAD$boxcox_YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NMP_SPAD<-aov(data=NMP_SPAD,boxcox_YL_SPAD~Treatment3)
 summary(aov_model_NMP_SPAD)
-duncan_result_NMP_SPAD<- duncan.test(aov_model_SMP_SPAD,"Treatment3")
-duncan_result_NMP_SPAD
+#Non-parameter test
+kruskal.test(YL_SPAD~Treatment3, data = NMP_SPAD)
+aov_model_NMP_SPAD<-aov(data=NMP_SPAD,YL_SPAD~Treatment3)
+dunnettT3Test(aov_model_NMP_SPAD,p.adjust.method = "BH")
 
 # 6.1.2 Plots #
 NMP_SPAD_Bar<-ggplot(NMP_SPAD,aes(Treatment3,YL_SPAD))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",y='SPAD')+
   scale_y_continuous(limits = c(0,40))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 NMP_SPAD_Bar
 setwd(wdOutput_Figure4)
 getwd()
@@ -276,51 +355,89 @@ ggsave(paste("NMP_SPAD_Bar",".pdf",sep=""),
 ## 6.2 NMP-Acitve Fe ###
 NMP_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="NMP")
 # 6.2.1 statistical analysis #
-compare_means(data=NMP_ActiveFe,YL_ActiveFe~Treatment3,method = "t.test")
+leveneTest(YL_ActiveFe ~ Treatment3, data = NMP_ActiveFe)#p>0.05，则满足方差齐性
+shapiro.test(NMP_ActiveFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+NMP_ActiveFe<-NMP_ActiveFe%>%mutate(boxcox_YL_ActiveFe =BoxCox(NMP_ActiveFe$YL_ActiveFe,lambda="auto"))
+leveneTest(boxcox_YL_ActiveFe ~ Treatment3, data = NMP_ActiveFe)#p>0.05，则满足方差齐性
+shapiro.test(NMP_ActiveFe$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NMP_ActiveFe<-aov(data=NMP_ActiveFe,YL_ActiveFe~Treatment3)
 summary(aov_model_NMP_ActiveFe)
-duncan_result_NMP_ActiveFe<- duncan.test(aov_model_NMP_ActiveFe,"Treatment3")
-duncan_result_NMP_ActiveFe
+LSD_model_NMP_ActiveFe<-LSD.test(aov_model_NMP_ActiveFe,"Treatment3",p.adj = "BH")
+LSD_model_NMP_ActiveFe
+
+#Non-parameter test
+kruskal.test(YL_ActiveFe~Treatment3, data = NMP_ActiveFe)
+aov_model_NMP_ActiveFe<-aov(data=NMP_ActiveFe,boxcox_YL_ActiveFe~Treatment3)
+dunnettT3Test(aov_model_NMP_ActiveFe,p.adjust.method = "BH")
 
 # 6.2.2 Plots #
 NMP_YL_ActiveFe_Bar<-ggplot(NMP_ActiveFe,aes(Treatment3,YL_ActiveFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,7))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 NMP_YL_ActiveFe_Bar
 setwd(wdOutput_Figure4)
 getwd()
 ggsave(paste("NMP_YL_ActiveFe_Bar",".pdf",sep=""),
        NMP_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=72,dpi = 300,units = "mm")
 
-## 6.3 NMP-AvailableFe ###
-NMP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="NMP")
+## 6.3 NMP-biomass ###
+NMP_Biomass<-SterilePot_Biomass%>%filter(Treatment2=="NMP")
 # 6.3.1 statistical analysis #
-compare_means(data=NMP_AvailableFe,availableFe~Treatment3,method = "t.test")
-aov_model_NMP_AvailableFe<-aov(data=NMP_AvailableFe,availableFe~Treatment3)
-summary(aov_model_NMP_AvailableFe)
-duncan_model_NMP_AvailableFe<- duncan.test(aov_model_NMP_AvailableFe,"Treatment3")
-duncan_model_NMP_AvailableFe
+leveneTest(Total ~ Treatment3, data = NMP_Biomass)#p>0.05，则满足方差齐性
+shapiro.test(NMP_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NMP_Biomass<-aov(data=NMP_Biomass,Total~Treatment3)
+summary(aov_model_NMP_Biomass)
+LSD_model_NMP_Biomass<-LSD.test(aov_model_NMP_Biomass,"Treatment3",p.adj = "BH")
+LSD_model_NMP_Biomass
 
 # 6.3.2 Plots #
-NMP_AvailableFe_Bar<-ggplot(NMP_AvailableFe,aes(Treatment3,availableFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
+NMP_Biomass_Bar<-ggplot(NMP_Biomass,aes(Treatment3,Total))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
                geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
+  labs(x="",
+       y="Biomas (g/plant)",parse =T)+
+  scale_y_continuous(limits = c(0,15))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(fill="none")
+NMP_Biomass_Bar
+setwd(wdOutput_Figure4)
+getwd()
+ggsave(paste("NMP_Biomass_Bar",".pdf",sep=""),
+       NMP_Biomass_Bar,device=cairo_pdf,width=50,height=59,dpi = 300,units = "mm")
+
+## 6.4 NMP-AvailableFe ###
+NMP_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="NMP")
+# 6.4.1 statistical analysis #
+leveneTest(availableFe ~ Treatment3, data = NMP_AvailableFe)#p>0.05，则满足方差齐性
+shapiro.test(NMP_AvailableFe$availableFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NMP_AvailableFe<-aov(data=NMP_AvailableFe,availableFe~Treatment3)
+summary(aov_model_NMP_AvailableFe)
+LSD_model_NMP_ActiveFe<-LSD.test(aov_model_NMP_AvailableFe,"Treatment3",p.adj = "none")
+LSD_model_NMP_ActiveFe
+
+# 6.4.2 Plots #
+NMP_AvailableFe_Bar<-ggplot(NMP_AvailableFe,aes(Treatment3,availableFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.65,size=0.2)+
+  stat_summary(fun=mean, geom='point',size=1)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.15,size=0.15)+
   labs(x="",
        y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,8))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color=F)
+  guides(fill="none")
 NMP_AvailableFe_Bar
 setwd(wdOutput_Figure4)
 getwd()
@@ -331,19 +448,18 @@ ggsave(paste("NMP_AvailableFe_Bar",".pdf",sep=""),
 ### 7.1 Beijing###
 BJ_Field_SPAD<-Field_SPAD%>%filter(Position=="Beijing")
 ## 7.1.1 statistical analysis##
-compare_means(data=BJ_Field_SPAD,YL_SPAD~Treatment,method = "t.test")
+leveneTest(YL_SPAD ~ Treatment, data = BJ_Field_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(BJ_Field_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_BJ_Field_SPAD<-aov(data=BJ_Field_SPAD,YL_SPAD~Treatment)
 summary(aov_model_BJ_Field_SPAD)
-duncan_result_BJ_Field_SPAD<- duncan.test(aov_model_BJ_Field_SPAD,"Treatment")
-duncan_result_BJ_Field_SPAD
+LSD_model_BJ_Field_SPAD<-LSD.test(aov_model_BJ_Field_SPAD,"Treatment",p.adj = "BH")
+LSD_model_BJ_Field_SPAD
 
 # 7.1.2 Plot #
 BJ_Field_SPAD_box_jitter<-ggplot(BJ_Field_SPAD,aes(Treatment,YL_SPAD))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=T,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=T,size=0.2)+
   labs(x="",
        y="SPAD",parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_y_continuous(limits = c(6,45))+
   mytheme+
@@ -357,18 +473,17 @@ ggsave(paste("BJ_Field_SPAD_box_jitter",".pdf",sep=""),
 ### 7.2 Puyang ###
 PY_Field_SPAD<-Field_SPAD%>%filter(Position=="Puyang")
 ## 6.2.1 statistical analysis##
-compare_means(data=PY_Field_SPAD,YL_SPAD~Treatment,method = "t.test")
+leveneTest(YL_SPAD ~ Treatment, data = PY_Field_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(PY_Field_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_PY_Field_SPAD<-aov(data=PY_Field_SPAD,YL_SPAD~Treatment)
 summary(aov_model_PY_Field_SPAD)
-duncan_result_PY_Field_SPAD<- duncan.test(aov_model_PY_Field_SPAD,"Treatment")
-duncan_result_PY_Field_SPAD
+LSD_model_PY_Field_SPAD<-LSD.test(aov_model_PY_Field_SPAD,"Treatment",p.adj = "BH")
+LSD_model_PY_Field_SPAD
 ## 6.2.2 Plot##
 PY_Field_SPAD_box_jitter<-ggplot(PY_Field_SPAD,aes(Treatment,YL_SPAD))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=T,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=T,size=0.2)+
   labs(x="",
        y="SPAD",parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   mytheme+
   scale_y_continuous(limits = c(6,45))+
@@ -383,18 +498,17 @@ ggsave(paste("PY_Field_SPAD_box_jitter",".pdf",sep=""),
 ### 8.1 Beijing ###
 BJ_Field_Iron<-Field_Iron%>%filter(Position=="Beijing")
 ## 8.1.1 statistical analysis##
-compare_means(data=BJ_Field_Iron,YL_ActiveFe~Treatment,method = "t.test")
-aov_model_BJ_Field_SPAD<-aov(data=BJ_Field_Iron,YL_ActiveFe~Treatment)
-summary(aov_model_BJ_Field_SPAD)
-duncan_result_BJ_Field_SPAD<- duncan.test(aov_model_BJ_Field_SPAD,"Treatment")
-duncan_result_BJ_Field_SPAD
+leveneTest(YL_ActiveFe ~ Treatment, data = BJ_Field_Iron)#p>0.05，则满足方差齐性
+shapiro.test(BJ_Field_Iron$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_BJ_Field_ActiveFe<-aov(data=BJ_Field_Iron,YL_ActiveFe~Treatment)
+summary(aov_model_BJ_Field_ActiveFe)
+LSD_model_BJ_Field_ActiveFe<-LSD.test(aov_model_BJ_Field_ActiveFe,"Treatment",p.adj = "BH")
+LSD_model_BJ_Field_ActiveFe
 ## 8.1.2 Plot ##
 BJ_Field_YL_ActiveFe_box_jitter<-ggplot(BJ_Field_Iron,aes(Treatment,YL_ActiveFe))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=F,size=0.2)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_y_continuous(limits = c(1,9),breaks = c(3,6,9))+
   mytheme+
@@ -408,18 +522,17 @@ ggsave(paste("BJ_Field_YL_ActiveFe_box_jitter",".pdf",sep=""),
 ### 8.2 Puyang ###
 PY_Field_Iron<-Field_Iron%>%filter(Position=="Puyang")
 ## 8.2.1 statistical analysis##
-compare_means(data=PY_Field_Iron,YL_ActiveFe~Treatment,method = "t.test")
+leveneTest(YL_ActiveFe ~ Treatment, data = PY_Field_Iron)#p>0.05，则满足方差齐性
+shapiro.test(PY_Field_Iron$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_PY_Field_ActiveFe<-aov(data=PY_Field_Iron,YL_ActiveFe~Treatment)
 summary(aov_model_PY_Field_ActiveFe)
-duncan_result_PY_Field_ActiveFe<- duncan.test(aov_model_PY_Field_ActiveFe,"Treatment")
-duncan_result_PY_Field_ActiveFe
+LSD_model_PY_Field_ActiveFe<-LSD.test(aov_model_PY_Field_ActiveFe,"Treatment",p.adj = "BH")
+LSD_model_PY_Field_ActiveFe
 ## 8.2.2 Plot ##
 PY_Field_YL_ActiveFe_box_jitter<-ggplot(PY_Field_Iron,aes(Treatment,YL_ActiveFe))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=F,size=0.2)+
   labs(x="",
        y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   mytheme+
   scale_y_continuous(limits = c(1,9),breaks = c(3,6,9))+
@@ -434,19 +547,17 @@ ggsave(paste("PY_Field_YL_ActiveFe_box_jitter",".pdf",sep=""),
 ### 9.1 Beijing ###
 BJ_Field_Iron<-Field_Iron[c(1:18),]
 ## 9.1.1 statistical analysis##
-#样本量大于50用Kolmogorov-Smirnov检验Chao正态分布性，小于5O用shapiro-wilk检验，p值大于0.05及符合正态分布
-compare_means(data=BJ_Field_Iron,Available_Fe~Treatment,method = "t.test")
+leveneTest(Available_Fe ~ Treatment, data = BJ_Field_Iron)#p>0.05，则满足方差齐性
+shapiro.test(PY_Field_Iron$Available_Fe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_BJ_Field_AvailableFe<-aov(data=BJ_Field_Iron,Available_Fe~Treatment)
 summary(aov_model_BJ_Field_AvailableFe)
-duncan_result_BJ_Field_AvailableFe<- duncan.test(aov_model_BJ_Field_AvailableFe,"Treatment")
-duncan_result_BJ_Field_AvailableFe
+LSD_model_PY_Field_ActiveFe<-LSD.test(aov_model_PY_Field_ActiveFe,"Treatment",p.adj = "BH")
+LSD_model_PY_Field_ActiveFe
 ## 9.1.2 Plot ##
 BJ_Field_Available_Fe_box_jitter<-ggplot(BJ_Field_Iron,aes(Treatment,Available_Fe))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=F,size=0.2)+
   labs(x="",
        y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   mytheme+
   scale_y_continuous(limits = c(2,22),breaks = c(5,10,15))+
@@ -460,18 +571,17 @@ ggsave(paste("BJ_Field_Available_Fe_box_jitter",".pdf",sep=""),
 ### 9.2 Puyang###
 PY_Field_AvailableFe<-Field_Iron[c(25:48),]
 ## 9.2.1 statistical analysis ##
-compare_means(data=PY_Field_AvailableFe,Available_Fe~Treatment,method = "t.test")
+leveneTest(Available_Fe ~ Treatment, data = PY_Field_Iron)#p>0.05，则满足方差齐性
+shapiro.test(PY_Field_Iron$Available_Fe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_PY_Field_AvailableFe<-aov(data=PY_Field_AvailableFe,Available_Fe~Treatment)
 summary(aov_model_PY_Field_AvailableFe)
-duncan_result_PY_Field_AvailableFe<- duncan.test(aov_model_PY_Field_AvailableFe,"Treatment")
-duncan_result_PY_Field_AvailableFe
+LSD_model_PY_Field_AvailableFe<-LSD.test(aov_model_PY_Field_AvailableFe,"Treatment",p.adj = "BH")
+LSD_model_PY_Field_AvailableFe
 ## 9.2.2 Plot ##
 PY_Field_Available_Fe_box_jitter<-ggplot(PY_Field_AvailableFe,aes(Treatment,Available_Fe))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=F,size=0.2)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   mytheme+
   scale_y_continuous(limits = c(2,22),breaks = c(5,10,15))+
@@ -486,19 +596,23 @@ ggsave(paste("PY_Field_Available_Fe_box_jitter",".pdf",sep=""),
 ### 10.1 Beijing ###
 BJ_Field_Yield<-Field_Yield%>%filter(Position=="Beijing")
 ## 10.1.1 statistical analysis##
-compare_means(data=BJ_Field_Yield,YieldPerHa~Treatment,method = "t.test")
+leveneTest(YieldPerHa ~ Treatment, data = BJ_Field_Yield)#p>0.05，则满足方差齐性
+shapiro.test(BJ_Field_Yield$YieldPerHa)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+BJ_Field_Yield<-BJ_Field_Yield%>%mutate(boxcox_YieldPerHa =BoxCox(BJ_Field_Yield$YieldPerHa,lambda="auto"))
+leveneTest(boxcox_YieldPerHa ~ Treatment, data = BJ_Field_Yield)#p>0.05，则满足方差齐性
+shapiro.test(BJ_Field_Yield$boxcox_YieldPerHa)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_BJ_Field_Yield<-aov(data=BJ_Field_Yield,YieldPerHa~Treatment)
 summary(aov_model_BJ_Field_Yield)
-duncan_result_BJ_Field_Yield<- duncan.test(aov_model_BJ_Field_Yield,"Treatment")
-duncan_result_BJ_Field_Yield
+#Non-parameter test
+kruskal.test(YieldPerHa~Treatment, data = BJ_Field_Yield)
+aov_model_BJ_Field_Yield<-aov(data=BJ_Field_Yield,YieldPerHa~Treatment)
+dunnettT3Test(aov_model_BJ_Field_Yield,p.adjust.method = "BH")
 
 ## 10.1.1 Plot ##
 BJ_Field_Yield_box_jitter<-ggplot(BJ_Field_Yield,aes(Treatment,YieldPerHa))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=F,size=0.2)+
   labs(x="",
        y=expression('The yield (t '*ha^{-1}*')'),parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   mytheme+
   scale_y_continuous(limits = c(1.5,7),breaks = c(2,4,6))+
@@ -509,20 +623,20 @@ getwd()
 ggsave(paste("BJ_Field_Yield_box_jitter",".pdf",sep=""),
        BJ_Field_Yield_box_jitter,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")
 
-### Puyang ###
+### 10.2Puyang ###
 PY_Field_Yield<-Field_Yield%>%filter(Position=="Puyang")
-compare_means(data=PY_Field_Yield,YieldPerHa~Treatment,method = "t.test")
+## 10.2.1 statistical analysis##
+leveneTest(YieldPerHa ~ Treatment, data = PY_Field_Yield)#p>0.05，则满足方差齐性
+shapiro.test(PY_Field_Yield$YieldPerHa)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_PY_Field_Yield<-aov(data=PY_Field_Yield,YieldPerHa~Treatment)
 summary(aov_model_PY_Field_Yield)
-duncan_result_PY_Field_Yield<- duncan.test(aov_model_PY_Field_Yield,"Treatment")
-duncan_result_PY_Field_Yield
-#Plot#
+LSD_model_PY_Field_Yield<-LSD.test(aov_model_PY_Field_Yield,"Treatment",p.adj = "BH")
+LSD_model_PY_Field_Yield
+## 10.2.2 Plot ##
 PY_Field_Yield_box_jitter<-ggplot(PY_Field_Yield,aes(Treatment,YieldPerHa))+
-  geom_jitter(aes(Treatment,color=Treatment),width = 0.2, height = 0.2,size=0.7)+
-  geom_boxplot(width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,alpha=0.5,notch=F,size=0.2)+
+  geom_boxplot(aes(fill=Treatment),width = 0.65,outlier.alpha = 0.5,outlier.size=0.5,notch=F,size=0.2)+
   labs(x="",
        y=expression('The yield (t '*ha^{-1}*')'),parse =T)+
-  scale_color_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   scale_fill_manual(values=c("#BFBF4D","#F99F98","#4DC8F9","#45CB9D"))+
   mytheme+
   scale_y_continuous(limits = c(1.5,5),breaks = c(2,4,6))+

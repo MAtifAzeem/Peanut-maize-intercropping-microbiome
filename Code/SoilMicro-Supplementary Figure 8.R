@@ -55,10 +55,10 @@ wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental 
 setwd(wdImport)
 getwd()
 NetShift <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig s6a")
+                             sheet = "fig s8a")
 
 drivers_IPvsMP <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                           sheet = "fig s6b")
+                           sheet = "fig s8b")
 
 #### 4 ####
 ### 4.1 NetShift ###
