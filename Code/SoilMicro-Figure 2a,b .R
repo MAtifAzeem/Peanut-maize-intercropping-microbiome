@@ -15,7 +15,6 @@ library(ape)
 library(phyloseq)#microbiome analysis
 library(vegan)#Adonis analysis
 library(ComplexHeatmap)#heatmapping
-library(pheatmap)#heatmapping
 library(cluster)#hierarchical clustering
 library(psych)#correlationship analysis#
 #### 2. Setting themes and working dictionary path ####

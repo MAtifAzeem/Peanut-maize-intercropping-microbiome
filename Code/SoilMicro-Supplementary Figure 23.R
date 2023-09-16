@@ -37,7 +37,10 @@ mytheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colou
                              legend.title = element_text(size=7),
                              legend.background = element_blank(),
                              panel.border = element_rect(colour = NA),
-                             axis.line = element_line(color = "black",linewidth=0.4))#移除整体的边???
+                             axis.line = element_line(color="black",size=0.2),
+                             axis.ticks = element_line(color="black",size=0.2,lineend = 0.1),
+                             axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
+
 
 FacetTheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#000000"),
                                 text = element_text(family = "Arial"),
@@ -50,270 +53,130 @@ FacetTheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",co
                                 legend.background = element_blank(),
                                 axis.line = element_line(color = "black",linewidth=0.4))#移除整体的边???
 wdImport<- c("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
-wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/treatmens_maize")
+wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/NIP")
 
 #### 3. Peanut-Pot and field ####
 #### 3.1 Import and process data ####
 setwd(wdImport)
-SterilePotSPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig s23 SPAD")
-SterilePotSPAD$Treatment3<-factor(SterilePotSPAD$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
+NIP_SPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                             sheet = "fig s24 SPAD of NIP")
+NIP_SPAD$Treatment3<-factor(NIP_SPAD$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
-SterilePot_ActiveFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                  sheet = "fig s23 activeFe")
-SterilePot_ActiveFe$Treatment3<-factor(SterilePot_ActiveFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
+NIP_Iron <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                                  sheet = "fig s24 iron of NIP")
+NIP_Iron$Treatment3<-factor(NIP_Iron$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
-SterilePot_Biomass <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                 sheet = "fig s23 biomass")
-SterilePot_Biomass$Treatment3<-factor(SterilePot_Biomass$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
+NIP_Biomass <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                       sheet = "fig s24 biomass of NIP")
+NIP_Biomass$Treatment3<-factor(NIP_Biomass$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
-#SterilePot_AvailableFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-#                                 sheet = "fig 4b availableFe in pot")
-#SterilePot_AvailableFe$Treatment3<-factor(SterilePot_AvailableFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
-
-#### 4 SIM ####
-## 4.1 SIM-SPAD ###
-SIM_SPAD<-SterilePotSPAD%>%filter(Treatment2=="SIM")
+#### 4 NIP ####
+## 4.1 NIP-SPAD ###
 # 4.1.1 statistical analysis #
-leveneTest(YL_SPAD ~ Treatment3, data = SIM_SPAD)#p>0.05，则满足方差齐性
-shapiro.test(SIM_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-SIM_SPAD<-SIM_SPAD%>%mutate(boxcox_YL_SPAD=BoxCox(SIM_SPAD$YL_SPAD,lambda="auto"))
-shapiro.test(SIM_SPAD$boxcox_YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_SIM_SPAD<-aov(data=SIM_SPAD,YL_SPAD~Treatment3)
-summary(aov_model_SIM_SPAD)
-#Nonparametric tests
-kruskal.test(YL_SPAD~Treatment3, data = SIM_SPAD)
-aov_model_SIM_SPAD<-aov(data=SIM_SPAD,YL_SPAD~Treatment3)
-dunnettT3Test(aov_model_SIM_SPAD,p.adjust.method = "BH")
+leveneTest(YL_SPAD ~ Treatment3, data = NIP_SPAD)#p>0.05，则满足方差齐性
+shapiro.test(NIP_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+compare_means(data=NIP_SPAD,YL_SPAD~Treatment3,method = "t.test")
+aov_model_NIP_SPAD<-aov(data=NIP_SPAD,YL_SPAD~Treatment3)
+summary(aov_model_NIP_SPAD)
+LSD_model_NIP_SPAD<- LSD.test(aov_model_NIP_SPAD,"Treatment",p.adj = "BH")
+LSD_model_NIP_SPAD
 
 # 4.1.2 Plots #
-SIM_SPAD_Bar<-ggplot(SIM_SPAD,aes(Treatment3,YL_SPAD))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+NIP_SPAD_Bar<-ggplot(NIP_SPAD,aes(Treatment3,YL_SPAD))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",y='SPAD')+
-  scale_y_continuous(limits = c(0,40))+
+  scale_y_continuous(limits = c(0,50))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
   guides(fill="none")
-SIM_SPAD_Bar
+NIP_SPAD_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("SIM_SPAD_Bar",".pdf",sep=""),
-       SIM_SPAD_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
+ggsave(paste("NIP_SPAD_Bar",".pdf",sep=""),
+       NIP_SPAD_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
 
-## 4.2. SIM-Acitve Fe ###
-SIM_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="SIM")
-SIM_ActiveFe
+## 4.2. NIP-Acitve Fe ###
 # 4.2.1 statistical analysis #
-leveneTest(YL_ActiveFe ~ Treatment3, data = SIM_ActiveFe)#p>0.05，则满足方差齐性
-shapiro.test(SIM_ActiveFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-SIM_ActiveFe<-SIM_ActiveFe%>%mutate(boxcox_YL_ActiveFe=BoxCox(SIM_ActiveFe$YL_ActiveFe,lambda="auto"))
-leveneTest(boxcox_YL_ActiveFe ~ Treatment3, data = SIM_ActiveFe)#p>0.05，则满足方差齐性
-shapiro.test(SIM_ActiveFe$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_SIM_ActiveFe<-aov(data=SIM_ActiveFe,boxcox_YL_ActiveFe~Treatment3)
-summary(aov_model_SIM_ActiveFe)
-LSD_model_SIM_ActiveFe<- LSD.test(aov_model_SIM_ActiveFe,"Treatment3",p.adj = "BH")
-LSD_model_SIM_ActiveFe
+leveneTest(YL_ActiveFe ~ Treatment3, data = NIP_Iron)#p>0.05，则满足方差齐性
+shapiro.test(NIP_Iron$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+NIP_Iron<-NIP_Iron%>%mutate(boxcox_YL_ActiveFe=BoxCox(NIP_Iron$YL_ActiveFe,lambda="auto"))
+shapiro.test(NIP_Iron$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NIP_ActiveFe<-aov(data=NIP_Iron,boxcox_YL_ActiveFe~Treatment3)
+summary(aov_model_NIP_ActiveFe)
+LSD_model_NIP_ActiveFe<- LSD.test(aov_model_NIP_ActiveFe,"Treatment3",p.adj = "BH")
+LSD_model_NIP_ActiveFe
 
 # 4.2.2 statistical analysis #
-SIM_YL_ActiveFe_Bar<-ggplot(SIM_ActiveFe,aes(Treatment3,YL_ActiveFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+NIP_YL_ActiveFe_Bar<-ggplot(NIP_Iron,aes(Treatment3,YL_ActiveFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,15))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
   guides(fill="none")
-SIM_YL_ActiveFe_Bar
+NIP_YL_ActiveFe_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("SIM_YL_ActiveFe_Bar",".pdf",sep=""),
-       SIM_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
+ggsave(paste("NIP_YL_ActiveFe_Bar",".pdf",sep=""),
+       NIP_YL_ActiveFe_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
 
-## 4.3 SIM-AvailableFe ###
-SIM_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="SIM")
+## 4.3 NIP-AvailableFe ###
 # 4.3.1 statistical analysis #
-leveneTest(availableFe ~ Treatment3, data = SIM_AvailableFe)#p>0.05，则满足方差齐性
-shapiro.test(SIM_AvailableFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-SIM_AvailableFe<-SIM_AvailableFe%>%mutate(boxcox_YL_ActiveFe=BoxCox(SIM_ActiveFe$YL_ActiveFe,lambda="auto"))
-shapiro.test(SIM_ActiveFe$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_SIM_ActiveFe<-aov(data=SIM_ActiveFe,boxcox_YL_ActiveFe~Treatment3)
-compare_means(data=SIM_AvailableFe,availableFe~Treatment3,method = "t.test")
-aov_model_SIM_AvailableFe<-aov(data=SIM_AvailableFe,availableFe~Treatment3)
-summary(aov_model_SIM_AvailableFe)
-duncan_model_SIM_AvailableFe<- duncan.test(aov_model_SIM_AvailableFe,"Treatment3")
-duncan_model_SIM_AvailableFe
+leveneTest(availableFe ~ Treatment3, data = NIP_Iron)#p>0.05，则满足方差齐性
+shapiro.test(NIP_Iron$availableFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NIP_AvailableFe<-aov(data=NIP_Iron,availableFe~Treatment3)
+summary(aov_model_NIP_AvailableFe)
+LSD_model_NIP_AvailableFe<- LSD.test(aov_model_NIP_AvailableFe,"Treatment3",p.adj = "BH")
+LSD_model_NIP_AvailableFe
 
 # 4.3.2 Plots #
-SIM_AvailableFe_Bar<-ggplot(SIM_AvailableFe,aes(Treatment3,availableFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+NIP_AvailableFe_Bar<-ggplot(NIP_Iron,aes(Treatment3,availableFe))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",
        y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,8))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
-  guides(color="none")
-SIM_AvailableFe_Bar
+  guides(fill="none")
+NIP_AvailableFe_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("SIM_AvailableFe_Bar",".pdf",sep=""),
-       SIM_AvailableFe_Bar,device=cairo_pdf,width=50,height=59,dpi = 300,units = "mm")
+ggsave(paste("NIP_AvailableFe_Bar",".pdf",sep=""),
+       NIP_AvailableFe_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
 
-## 4.5. SIM-Biomass ###
-SIM_Biomass<-SterilePot_Biomass%>%filter(Treatment2=="SIM")
-SIM_Biomass
-# 4.5.1 statistical analysis #
-leveneTest(Total ~ Treatment3, data = SIM_Biomass)#p>0.05，则满足方差齐性
-shapiro.test(SIM_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_SIM_Biomass<-aov(data=SIM_Biomass,Total~Treatment3)
-summary(aov_model_SIM_Biomass)
-LSD_model_SIM_Biomass<- LSD.test(aov_model_SIM_Biomass,"Treatment3",p.adj = "BH")
-LSD_model_SIM_Biomass
+## 4.4 NIP-Biomass ###
+# 4.4.1 statistical analysis #
+leveneTest(Total ~ Treatment3, data = NIP_Biomass)#p>0.05，则满足方差齐性
+shapiro.test(NIP_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NIP_Biomass<-aov(data=NIP_Biomass,Total~Treatment3)
+summary(aov_model_NIP_Biomass)
+LSD_model_NIP_Biomass<- LSD.test(aov_model_NIP_Biomass,"Treatment3",p.adj = "BH")
+LSD_model_NIP_Biomass
 
-# 4.5.2 plots #
-SIM_Biomass_Bar<-ggplot(SIM_Biomass,aes(Treatment3,Total))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+# 4.4.2 Plots #
+NIP_Biomass_Bar<-ggplot(NIP_Biomass,aes(Treatment3,Total))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",
        y=expression('Biomass(g)'),parse =T)+
-  scale_y_continuous(limits = c(0,25))+
-  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
-  mytheme+
-  guides(fill="none")
-SIM_Biomass_Bar
-setwd(wdOutput)
-getwd()
-ggsave(paste("SIM_Biomass_Bar",".pdf",sep=""),
-       SIM_Biomass_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
-
-#### 5 NIM ####
-## 5.1 NIM-SPAD ###
-NIM_SPAD<-SterilePotSPAD%>%filter(Treatment2=="NIM")
-# 5.1.1 statistical analysis #
-leveneTest(YL_SPAD ~ Treatment3, data = NIM_SPAD)#p>0.05，则满足方差齐性
-shapiro.test(NIM_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-NIM_SPAD<-NIM_SPAD%>%mutate(boxcox_YL_SPAD=BoxCox(NIM_SPAD$YL_SPAD,lambda="auto"))
-leveneTest(boxcox_YL_SPAD ~ Treatment3, data = NIM_SPAD)#p>0.05，则满足方差齐性
-shapiro.test(NIM_SPAD$boxcox_YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_NIM_SPAD<-aov(data=NIM_SPAD,YL_SPAD~Treatment3)
-summary(aov_model_NIM_SPAD)
-#Nonparametric tests
-kruskal.test(YL_SPAD~Treatment3, data = NIM_SPAD)
-aov_model_NIM_SPAD<-aov(data=SIM_SPAD,YL_SPAD~Treatment3)
-dunnettT3Test(aov_model_NIM_SPAD,p.adjust.method = "BH")
-
-# 5.1.2 Plots #
-NIM_SPAD_Bar<-ggplot(NIM_SPAD,aes(Treatment3,YL_SPAD))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
-  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  labs(x="",y='SPAD')+
-  scale_y_continuous(limits = c(0,40))+
-  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
-  mytheme+
-  guides(fill="none")
-NIM_SPAD_Bar
-setwd(wdOutput)
-getwd()
-ggsave(paste("NIM_SPAD_Bar",".pdf",sep=""),
-       NIM_SPAD_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
-
-## 5.2. NIM-Acitve Fe ###
-NIM_ActiveFe<-SterilePot_ActiveFe%>%filter(Treatment2=="NIM")
-NIM_ActiveFe
-# 5.2.1 statistical analysis #
-leveneTest(YL_ActiveFe ~ Treatment3, data = NIM_ActiveFe)#p>0.05，则满足方差齐性
-shapiro.test(NIM_ActiveFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-NIM_ActiveFe<-NIM_ActiveFe%>%mutate(boxcox_YL_ActiveFe=BoxCox(NIM_ActiveFe$YL_ActiveFe,lambda="auto"))
-leveneTest(boxcox_YL_ActiveFe ~ Treatment3, data = NIM_ActiveFe)#p>0.05，则满足方差齐性
-shapiro.test(NIM_ActiveFe$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_NIM_ActiveFe<-aov(data=NIM_ActiveFe,YL_ActiveFe~Treatment3)
-summary(aov_model_NIM_ActiveFe)
-LSD_model_NIM_ActiveFe<- LSD.test(aov_model_NIM_ActiveFe,"Treatment3",p.adj = "BH")
-LSD_model_NIM_ActiveFe
-
-# 5.2.2 statistical analysis #
-NIM_YL_ActiveFe_Bar<-ggplot(NIM_ActiveFe,aes(Treatment3,YL_ActiveFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
-  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  labs(x="",
-       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,17))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
   guides(fill="none")
-NIM_YL_ActiveFe_Bar
+NIP_Biomass_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("NIM_YL_ActiveFe_Bar",".pdf",sep=""),
-       NIM_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
-
-## 5.3 NIM-AvailableFe ###
-NIM_AvailableFe<-SterilePot_AvailableFe%>%filter(Treatment2=="NIM")
-# 5.3.1 statistical analysis #
-compare_means(data=NIM_AvailableFe,availableFe~Treatment3,method = "t.test")
-aov_model_NIM_AvailableFe<-aov(data=NIM_AvailableFe,availableFe~Treatment3)
-summary(aov_model_NIM_AvailableFe)
-duncan_model_NIM_AvailableFe<- duncan.test(aov_model_NIM_AvailableFe,"Treatment3")
-duncan_model_NIM_AvailableFe
-
-# 5.3.2 Plots #
-NIM_AvailableFe_Bar<-ggplot(NIM_AvailableFe,aes(Treatment3,availableFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",fill="white",width=0.65,size=0.2)+
-  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  geom_jitter(aes(Treatment3,color=Treatment3),width = 0.2, height = 0.2,size=0.25)+
-  labs(x="",
-       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_y_continuous(limits = c(0,8))+
-  scale_color_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
-  mytheme+
-  guides(color=F)
-NIM_AvailableFe_Bar
-setwd(wdOutput)
-getwd()
-ggsave(paste("NIM_AvailableFe_Bar",".pdf",sep=""),
-       NIM_AvailableFe_Bar,device=cairo_pdf,width=50,height=59,dpi = 300,units = "mm")
-
-## 5.5. NIM-Biomass ###
-NIM_Biomass<-SterilePot_Biomass%>%filter(Treatment2=="NIM")
-NIM_Biomass
-# 5.5.1 statistical analysis #
-leveneTest(Total ~ Treatment3, data = NIM_Biomass)#p>0.05，则满足方差齐性
-shapiro.test(NIM_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_NIM_Biomass<-aov(data=NIM_Biomass,Total~Treatment3)
-summary(aov_model_NIM_Biomass)
-LSD_model_NIM_Biomass<- LSD.test(aov_model_NIM_Biomass,"Treatment3",p.adj = "BH")
-LSD_model_NIM_Biomass
-
-# 5.5.2 statistical analysis #
-NIM_Biomass_Bar<-ggplot(NIM_Biomass,aes(Treatment3,Total))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
-  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  labs(x="",
-       y=expression('Biomass(g)'),parse =T)+
-  scale_y_continuous(limits = c(0,25))+
-  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
-  mytheme+
-  guides(fill="none")
-NIM_Biomass_Bar
-setwd(wdOutput)
-getwd()
-ggsave(paste("NIM_Biomass_Bar",".pdf",sep=""),
-       NIM_Biomass_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
-
+ggsave(paste("NIP_Biomass_Bar",".pdf",sep=""),
+       NIP_Biomass_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")

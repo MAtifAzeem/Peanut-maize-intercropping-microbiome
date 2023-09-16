@@ -36,7 +36,9 @@ mytheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colou
                              legend.title = element_text(size=7),
                              legend.background = element_blank(),
                              panel.border = element_rect(colour = NA),
-                             axis.line = element_line(color = "black",size=0.4))#移除整体的边???
+                             axis.line = element_line(color="black",size=0.2),
+                             axis.ticks = element_line(color="black",size=0.2,lineend = 0.1),
+                             axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
 
 FacetTheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#000000"),
                                 text = element_text(family = "Arial"),
@@ -86,11 +88,10 @@ LSD_model_PAO1_SPAD
 
 # 4.2 Plots #
 PAO1_SPAD_Bar<-ggplot(PAO1_SPAD,aes(treatment,YL_SPAD))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.65,size=0.2)+
-  stat_summary(fun = "mean",geom = "point",size=2,pch=20)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.5,size=0.15)+
+  geom_point(aes(fill=treatment),shape=21,position = position_jitterdodge(1),size=0.8,stroke = 0.2,alpha=0.6)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.6)+
-  labs(x="",y='SPAD')+
+               geom='errorbar', width=0.2,size=0.2)+
   scale_y_continuous(limits = c(0,45))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9","#00A087"))+
   mytheme+
@@ -99,7 +100,7 @@ PAO1_SPAD_Bar
 setwd(wdOutput_Figure5)
 getwd()
 ggsave(paste("PAO1_SPAD_Bar",".pdf",sep=""),
-       PAO1_SPAD_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
+       PAO1_SPAD_Bar,device=cairo_pdf,width=35,height=36,dpi = 300,units = "mm")
 
 ## 4.2 PAO1-Acitve Fe ###
 # 4.2.1 statistical analysis #
@@ -112,10 +113,10 @@ LSD_model_PAO1_ActiveFe
 
 # 4.2.2 statistical analysis #
 PAO1_YL_ActiveFe_Bar<-ggplot(PAO1_ActiveFe,aes(treatment,YL_ActiveFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.65,size=0.2)+
-  stat_summary(fun = "mean",geom = "point",size=2,pch=20)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.5,size=0.15)+
+  geom_point(aes(fill=treatment),shape=21,position = position_jitterdodge(1),size=0.8,stroke = 0.2)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.6)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,16))+
@@ -123,10 +124,10 @@ PAO1_YL_ActiveFe_Bar<-ggplot(PAO1_ActiveFe,aes(treatment,YL_ActiveFe))+
   mytheme+
   guides(fill="none")
 PAO1_YL_ActiveFe_Bar
-setwd(wdOutput)
+setwd(wdOutput_Figure5)
 getwd()
 ggsave(paste("PAO1_YL_ActiveFe_Bar",".pdf",sep=""),
-       PAO1_YL_ActiveFe_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
+       PAO1_YL_ActiveFe_Bar,device=cairo_pdf,width=35,height=36,dpi = 300,units = "mm")
 
 ## 4.3 PAO1-AvailableFe ###
 # 4.3.1 statistical analysis #
@@ -139,21 +140,21 @@ LSD_model_PAO1_AvailableFe
 
 # 4.3.2 Plots #
 PAO1_AvailableFe_Bar<-ggplot(PAO1_AvailableFe,aes(treatment,availableFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.65,size=0.2)+
-  stat_summary(fun = "mean",geom = "point",size=2,pch=20)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.5,size=0.15)+
+  geom_point(aes(fill=treatment),shape=21,position = position_jitterdodge(1),size=0.8,stroke = 0.2)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.6)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",
-       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
+       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,8))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9","#00A087"))+
   mytheme+
   guides(fill="none")
 PAO1_AvailableFe_Bar
-setwd(wdOutput)
+setwd(wdOutput_Figure5)
 getwd()
 ggsave(paste("PAO1_AvailableFe_Bar",".pdf",sep=""),
-       PAO1_AvailableFe_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
+       PAO1_AvailableFe_Bar,device=cairo_pdf,width=35,height=36,dpi = 300,units = "mm")
 
 ## 4.4. PAO1-Biomass ###
 # 4.4.1 statistical analysis #
@@ -165,10 +166,10 @@ LSD_model_PAO1_Biomass
 
 # 4.4.2 statistical analysis #
 PAO1_Biomass_Bar<-ggplot(PAO1_Biomass,aes(treatment,biomass))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.65,size=0.2)+
-  stat_summary(fun = "mean",geom = "point",size=2,pch=20)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.5,size=0.15)+
+  geom_point(aes(fill=treatment),shape=21,position = position_jitterdodge(1),size=0.8,stroke = 0.2)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.6)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",
        y=expression('Biomass(g)'),parse =T)+
   scale_y_continuous(limits = c(0,6.5))+
@@ -176,10 +177,10 @@ PAO1_Biomass_Bar<-ggplot(PAO1_Biomass,aes(treatment,biomass))+
   mytheme+
   guides(fill="none")
 PAO1_Biomass_Bar
-setwd(wdOutput)
+setwd(wdOutput_Figure5)
 getwd()
 ggsave(paste("PAO1_Biomass_Bar",".pdf",sep=""),
-       PAO1_Biomass_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
+       PAO1_Biomass_Bar,device=cairo_pdf,width=35,height=36,dpi = 300,units = "mm")
 
 ## 4.5. PAO1-Reduction ###
 # 4.5.1 statistical analysis #
@@ -196,10 +197,10 @@ dunnettT3Test(aov_model_NMP_Reduction,p.adjust.method = "BH")
 
 # 4.5.2 statistical analysis #
 PAO1_Reduction_Bar<-ggplot(PAO1_Reduction,aes(treatment,reduction))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.65,size=0.2)+
-  stat_summary(fun = "mean",geom = "point",size=2,pch=20)+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=treatment),width=0.5,size=0.15)+
+  geom_point(aes(fill=treatment),shape=21,position = position_jitterdodge(1),size=0.8,stroke = 0.2)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.6)+
+               geom='errorbar', width=0.2,size=0.2)+
   labs(x="",
        y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
   scale_y_continuous(limits = c(0,0.6))+
@@ -207,7 +208,7 @@ PAO1_Reduction_Bar<-ggplot(PAO1_Reduction,aes(treatment,reduction))+
   mytheme+
   guides(fill="none")
 PAO1_Reduction_Bar
-setwd(wdOutput)
+setwd(wdOutput_Figure5)
 getwd()
 ggsave(paste("PAO1_Reduction_Bar",".pdf",sep=""),
-       PAO1_Reduction_Bar,device=cairo_pdf,width=50,height=52,dpi = 300,units = "mm")
+       PAO1_Reduction_Bar,device=cairo_pdf,width=35,height=36,dpi = 300,units = "mm")

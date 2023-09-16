@@ -71,7 +71,6 @@ leveneTest(boxcox_YL_ActiveFe ~ Treatment, data = IPvsMP_Field_ActiveFe)#p>0.05�
 shapiro.test(IPvsMP_Field_ActiveFe$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 compare_means(YL_ActiveFe~Treatment,IPvsMP_Field_ActiveFe,method="wilcox.test")
 
-
 #### 5. Fig. 1c-Field-LER-NetEffect-SamePositon####
 ### 5.1 Import and process data ###
 setwd(wdImport)
@@ -235,8 +234,9 @@ LSD_model_PotSterilization_SPAD
 
 ### 9.3 Plots ###
 Pot_Sterilizatiion_YL_SPAD_Bar<-ggplot(PotSterilizationSPAD,aes(x=SoilTreatment,y=YL_SPAD,group=System))+
-  stat_summary(fun=mean, geom='bar',aes(fill=System),color="black",width=.5,position = position_dodge(0.6),size=0.12)+
-  stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.12)+
+  stat_summary(fun=mean, geom='bar',aes(fill=System),color="black",width=.25,position = position_dodge(0.6),size=0.15)+
+  stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.2)+
+  geom_point(aes(fill=System),shape=21,position = position_jitterdodge(0.18),size=0.8,stroke = 0.2,alpha=0.6)+
   mytheme+theme(legend.position = "top",legend.direction="horizontal")+
   scale_fill_manual(values = c("#4DBBD5","#E64B35"))+
   scale_y_continuous(limits=c(0,48))
@@ -255,7 +255,7 @@ PotSterilizationActiveFe<-PotSterilization[,-c(7,9)]
 PotSterilizationActiveFe<-na.omit(PotSterilizationActiveFe)
 PotSterilizationActiveFe$SoilTreatment <-factor(PotSterilizationActiveFe$SoilTreatment,level=c("Normal","Sterilization"))
 PotSterilizationActiveFe$System <-factor(PotSterilizationActiveFe$System,level=c("MP","IP"))
-PotSterilizationActiveFe<-PotSterilizationActiveFe%>%filter(ID!="NMP-CK-4")
+PotSterilizationActiveFe<-PotSterilizationActiveFe
 dim(PotSterilizationActiveFe)
 ### 10.2 Statistic analysis ###
 leveneTest(YL_ActiveFe ~ Treatment, data = PotSterilizationActiveFe)#p>0.05，则满足方差齐性
@@ -270,8 +270,9 @@ LSD_model_PotSterilization_boxcox_ActiveFe
 
 ### 10.3 Plots ###
 Pot_Sterilizatiion_YL_ActiveFe_Bar<-ggplot(PotSterilizationActiveFe,aes(x=SoilTreatment,y=YL_ActiveFe,group=System))+
-  stat_summary(fun=mean, geom='bar',aes(fill=System),color="black",width=.5,position = position_dodge(0.6),size=0.12)+
-  stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.12)+
+  stat_summary(fun=mean, geom='bar',aes(fill=System),color="black",width=.25,position = position_dodge(0.6),size=0.15)+
+  stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.2)+
+  geom_point(aes(fill=System),shape=21,position = position_jitterdodge(0.18),size=0.8,stroke = 0.2)+
   mytheme+theme(legend.position = "top",legend.direction="horizontal")+
   scale_fill_manual(values = c("#4DBBD5","#E64B35"))+
   scale_y_continuous(limits=c(0,15))
@@ -303,8 +304,9 @@ LSD_model_PotSterilization_AvailableFe
 
 ### 11.3 Plots ###
 Pot_Sterilizatiion_AvailableFe_Bar<-ggplot(PotSterilizationAvailableFe,aes(x=SoilTreatment,y=AvailableFe,group=System))+
-  stat_summary(fun=mean, geom='bar',aes(fill=System),color="black",width=.5,position = position_dodge(0.6),size=0.12)+
-  stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.12)+
+  stat_summary(fun=mean, geom='bar',aes(fill=System),color="black",width=.25,position = position_dodge(0.6),size=0.15)+
+  stat_summary(fun.data = mean_sdl,geom='errorbar',width=.1,position = position_dodge(0.6),size=0.2)+
+  geom_point(aes(fill=System),shape=21,position = position_jitterdodge(0.18),size=0.8,stroke = 0.2)+
   mytheme+theme(legend.position = "top",legend.direction="horizontal")+
   scale_fill_manual(values = c("#4DBBD5","#E64B35"))+
   scale_y_continuous(limits=c(0,15))
@@ -314,3 +316,4 @@ setwd(wdOutput_Figure1)
 getwd()
 ggsave(paste("Pot_Sterilizatiion_AvailableFe_Bar",".pdf",sep=""),
        Pot_Sterilizatiion_AvailableFe_Bar,device=cairo_pdf,width=45,height=40,dpi = 300,units = "mm")
+

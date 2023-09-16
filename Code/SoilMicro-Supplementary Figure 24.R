@@ -37,7 +37,10 @@ mytheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colou
                              legend.title = element_text(size=7),
                              legend.background = element_blank(),
                              panel.border = element_rect(colour = NA),
-                             axis.line = element_line(color = "black",linewidth=0.4))#移除整体的边???
+                             axis.line = element_line(color="black",size=0.2),
+                             axis.ticks = element_line(color="black",size=0.2,lineend = 0.1),
+                             axis.ticks.length = unit(0.8, "mm"))#移除整体的边???
+
 
 FacetTheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",colour ="#000000"),
                                 text = element_text(family = "Arial"),
@@ -50,130 +53,183 @@ FacetTheme <- theme_few()+theme(strip.background = element_rect(fill="gray72",co
                                 legend.background = element_blank(),
                                 axis.line = element_line(color = "black",linewidth=0.4))#移除整体的边???
 wdImport<- c("E:/working/SCI/Soil Micro/SCI/Figures/Data/Data for submit")
-wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/NIP")
+wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental materials/treatments_reduction_DMA")
 
 #### 3. Peanut-Pot and field ####
 #### 3.1 Import and process data ####
 setwd(wdImport)
-NIP_SPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig s24 SPAD of NIP")
-NIP_SPAD$Treatment3<-factor(NIP_SPAD$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
+SterilePotreduction<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                             sheet = "fig s25 reduction")
+SterilePotreduction$Treatment3<-factor(SterilePotreduction$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
-NIP_Iron <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                  sheet = "fig s24 iron of NIP")
-NIP_Iron$Treatment3<-factor(NIP_Iron$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
+SterilePot_MArelease <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                                  sheet = "fig s25 DMA")
+SterilePot_MArelease$Treatment3<-factor(SterilePot_MArelease$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
-NIP_Biomass <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                       sheet = "fig s24 biomass of NIP")
-NIP_Biomass$Treatment3<-factor(NIP_Biomass$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
-
-#### 4 NIP ####
-## 4.1 NIP-SPAD ###
+#### 4 SIP ####
+## 4.1 SIP-reduction ###
+SIP_reduction<-SterilePotreduction%>%filter(Treatment2=="SIP")
 # 4.1.1 statistical analysis #
-leveneTest(YL_SPAD ~ Treatment3, data = NIP_SPAD)#p>0.05，则满足方差齐性
-shapiro.test(NIP_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-compare_means(data=NIP_SPAD,YL_SPAD~Treatment3,method = "t.test")
-aov_model_NIP_SPAD<-aov(data=NIP_SPAD,YL_SPAD~Treatment3)
-summary(aov_model_NIP_SPAD)
-LSD_model_NIP_SPAD<- LSD.test(aov_model_NIP_SPAD,"Treatment",p.adj = "BH")
-LSD_model_NIP_SPAD
-
+leveneTest(ReductionValue ~ Treatment3, data = SIP_reduction)#p>0.05，则满足方差齐性
+shapiro.test(SIP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SIP_reduction<-aov(data=SIP_reduction,ReductionValue~Treatment3)
+summary(aov_model_SIP_reduction)
+LSD_model_SIP_reduction<- LSD.test(aov_model_SIP_reduction,"Treatment3",p.adj = "BH")
+LSD_model_SIP_reduction
 # 4.1.2 Plots #
-NIP_SPAD_Bar<-ggplot(NIP_SPAD,aes(Treatment3,YL_SPAD))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+SIP_reduction_Bar<-ggplot(SIP_reduction,aes(Treatment3,ReductionValue))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  labs(x="",y='SPAD')+
-  scale_y_continuous(limits = c(0,50))+
+               geom='errorbar', width=0.2,size=0.2)+
+  labs(x="",y='reduction')+
+  scale_y_continuous(limits = c(0,120))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
   guides(fill="none")
-NIP_SPAD_Bar
+SIP_reduction_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("NIP_SPAD_Bar",".pdf",sep=""),
-       NIP_SPAD_Bar,device=cairo_pdf,width=40,height=72,dpi = 300,units = "mm")
+ggsave(paste("SIP_reduction_Bar",".pdf",sep=""),
+       SIP_reduction_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
 
-## 4.2. NIP-Acitve Fe ###
-# 4.2.1 statistical analysis #
-leveneTest(YL_ActiveFe ~ Treatment3, data = NIP_Iron)#p>0.05，则满足方差齐性
-shapiro.test(NIP_Iron$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-NIP_Iron<-NIP_Iron%>%mutate(boxcox_YL_ActiveFe=BoxCox(NIP_Iron$YL_ActiveFe,lambda="auto"))
-shapiro.test(NIP_Iron$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_NIP_ActiveFe<-aov(data=NIP_Iron,boxcox_YL_ActiveFe~Treatment3)
-summary(aov_model_NIP_ActiveFe)
-LSD_model_NIP_ActiveFe<- LSD.test(aov_model_NIP_ActiveFe,"Treatment3",p.adj = "BH")
-LSD_model_NIP_ActiveFe
-
-# 4.2.2 statistical analysis #
-NIP_YL_ActiveFe_Bar<-ggplot(NIP_Iron,aes(Treatment3,YL_ActiveFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+#### 5 NIP ####
+## 5.1 NIP-reduction ###
+NIP_reduction<-SterilePotreduction%>%filter(Treatment2=="NIP")
+# 5.1.1 statistical analysis #
+leveneTest(ReductionValue ~ Treatment3, data = NIP_reduction)#p>0.05，则满足方差齐性
+shapiro.test(NIP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NIP_reduction<-aov(data=NIP_reduction,ReductionValue~Treatment3)
+summary(aov_model_NIP_reduction)
+LSD_model_NIP_reduction<- LSD.test(aov_model_NIP_reduction,"Treatment3",p.adj = "BH")
+LSD_model_NIP_reduction
+# 5.1.2 Plots #
+NIP_reduction_Bar<-ggplot(NIP_reduction,aes(Treatment3,ReductionValue))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  labs(x="",
-       y=expression('Active Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_y_continuous(limits = c(0,15))+
+               geom='errorbar', width=0.2,size=0.2)+
+  labs(x="",y='reduction')+
+  scale_y_continuous(limits = c(0,200))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
   guides(fill="none")
-NIP_YL_ActiveFe_Bar
+NIP_reduction_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("NIP_YL_ActiveFe_Bar",".pdf",sep=""),
-       NIP_YL_ActiveFe_Bar,device=cairo_pdf,width=40,height=60,dpi = 300,units = "mm")
+ggsave(paste("NIP_reduction_Bar",".pdf",sep=""),
+       NIP_reduction_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
 
-## 4.3 NIP-AvailableFe ###
-# 4.3.1 statistical analysis #
-leveneTest(availableFe ~ Treatment3, data = NIP_Iron)#p>0.05，则满足方差齐性
-shapiro.test(NIP_Iron$availableFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_NIP_AvailableFe<-aov(data=NIP_Iron,availableFe~Treatment3)
-summary(aov_model_NIP_AvailableFe)
-LSD_model_NIP_AvailableFe<- LSD.test(aov_model_NIP_AvailableFe,"Treatment3",p.adj = "BH")
-LSD_model_NIP_AvailableFe
-
-# 4.3.2 Plots #
-NIP_AvailableFe_Bar<-ggplot(NIP_Iron,aes(Treatment3,availableFe))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+#### 6 SMP ####
+## 6.1 SMP-reduction ###
+SMP_reduction<-SterilePotreduction%>%filter(Treatment2=="SMP")
+# 6.1.1 statistical analysis #
+leveneTest(ReductionValue ~ Treatment3, data = SMP_reduction)#p>0.05，则满足方差齐性
+shapiro.test(SMP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SMP_reduction<-aov(data=SMP_reduction,ReductionValue~Treatment3)
+summary(aov_model_SMP_reduction)
+LSD_model_SMP_reduction<- LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH")
+LSD_model_SMP_reduction
+# 6.1.2 Plots #
+SMP_reduction_Bar<-ggplot(SMP_reduction,aes(Treatment3,ReductionValue))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  labs(x="",
-       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_y_continuous(limits = c(0,8))+
+               geom='errorbar', width=0.2,size=0.2)+
+  labs(x="",y='reduction')+
+  scale_y_continuous(limits = c(0,250))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
   guides(fill="none")
-NIP_AvailableFe_Bar
+SMP_reduction_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("NIP_AvailableFe_Bar",".pdf",sep=""),
-       NIP_AvailableFe_Bar,device=cairo_pdf,width=50,height=60,dpi = 300,units = "mm")
+ggsave(paste("SMP_reduction_Bar",".pdf",sep=""),
+       SMP_reduction_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
 
-## 4.4 NIP-Biomass ###
-# 4.4.1 statistical analysis #
-leveneTest(Total ~ Treatment3, data = NIP_Biomass)#p>0.05，则满足方差齐性
-shapiro.test(NIP_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-aov_model_NIP_Biomass<-aov(data=NIP_Biomass,Total~Treatment3)
-summary(aov_model_NIP_Biomass)
-LSD_model_NIP_Biomass<- LSD.test(aov_model_NIP_Biomass,"Treatment3",p.adj = "BH")
-LSD_model_NIP_Biomass
-
-# 4.4.2 Plots #
-NIP_Biomass_Bar<-ggplot(NIP_Biomass,aes(Treatment3,Total))+
-  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),size=0.2)+
-  stat_summary(fun=mean, geom='point',size=1)+
+#### 7 NMP ####
+## 7.1 NMP-reduction ###
+NMP_reduction<-SterilePotreduction%>%filter(Treatment2=="NMP")
+# 7.1.1 statistical analysis #
+leveneTest(ReductionValue ~ Treatment3, data = NMP_reduction)#p>0.05，则满足方差齐性
+shapiro.test(NMP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+NMP_reduction<-NMP_reduction%>%mutate(boxcox_ReductionValue=BoxCox(NMP_reduction$ReductionValue,lambda = "auto"))
+leveneTest(boxcox_ReductionValue ~ Treatment3, data = NMP_reduction)#p>0.05，则满足方差齐性
+shapiro.test(NMP_reduction$boxcox_ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NMP_reduction<-aov(data=NMP_reduction,boxcox_ReductionValue~Treatment3)
+summary(aov_model_NMP_reduction)
+LSD_model_NMP_reduction<- LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH")
+LSD_model_NMP_reduction
+# 7.1.2 Plots #
+NMP_reduction_Bar<-ggplot(NMP_reduction,aes(Treatment3,ReductionValue))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
   stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
-               geom='errorbar', width=0.15,size=0.15)+
-  labs(x="",
-       y=expression('Available Fe (μg '*g^{-1}*')'),parse =T)+
-  scale_y_continuous(limits = c(0,17))+
+               geom='errorbar', width=0.2,size=0.2)+
+  labs(x="",y='reduction')+
+  scale_y_continuous(limits = c(0,300))+
   scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
   mytheme+
   guides(fill="none")
-NIP_Biomass_Bar
+NMP_reduction_Bar
 setwd(wdOutput)
 getwd()
-ggsave(paste("NIP_Biomass_Bar",".pdf",sep=""),
-       NIP_Biomass_Bar,device=cairo_pdf,width=50,height=60,dpi = 300,units = "mm")
+ggsave(paste("NMP_reduction_Bar",".pdf",sep=""),
+       NMP_reduction_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
+
+## 8. SIM-MArelease ###
+SIM_MArelease<-SterilePot_MArelease%>%filter(Treatment2=="SIM")
+SIM_MArelease
+# 8.1 statistical analysis #
+leveneTest(MAReleaseValue ~ Treatment3, data = SIM_MArelease)#p>0.05，则满足方差齐性
+shapiro.test(SIM_MArelease$MAReleaseValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_SIM_MArelease<-aov(data=SIM_MArelease,MAReleaseValue~Treatment3)
+summary(aov_model_SIM_MArelease)
+LSD_model_SIM_MArelease<- LSD.test(aov_model_SIM_MArelease,"Treatment3",p.adj = "BH")
+LSD_model_SIM_MArelease
+
+# 8.2 statistical analysis #
+SIM_MArelease_Bar<-ggplot(SIM_MArelease,aes(Treatment3,MAReleaseValue))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.2,size=0.2)+
+  labs(x="",y='MArelease')+
+  scale_y_continuous(limits = c(0,600))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(fill="none")
+SIM_MArelease_Bar
+setwd(wdOutput)
+getwd()
+ggsave(paste("SIM_MArelease_Bar",".pdf",sep=""),
+       SIM_MArelease_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
+
+## 5.4. NIM-MArelease ###
+NIM_MArelease<-SterilePot_MArelease%>%filter(Treatment2=="NIM")
+NIM_MArelease
+# 5.4.1 statistical analysis #
+leveneTest(MAReleaseValue ~ Treatment3, data = NIM_MArelease)#p>0.05，则满足方差齐性
+shapiro.test(NIM_MArelease$MAReleaseValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+aov_model_NIM_MArelease<-aov(data=NIM_MArelease,MAReleaseValue~Treatment3)
+summary(aov_model_NIM_MArelease)
+LSD_model_NIM_MArelease<- LSD.test(aov_model_NIM_MArelease,"Treatment3",p.adj = "BH")
+LSD_model_NIM_MArelease
+
+# 5.4.2 statistical analysis #
+NIM_MArelease_Bar<-ggplot(NIM_MArelease,aes(Treatment3,MAReleaseValue))+
+  geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
+  geom_point(aes(fill=Treatment3),shape=21,position = position_jitterdodge(1),size=1,stroke = 0.2,alpha=0.7)+
+  stat_summary(fun.data=function(...) mean_sdl(..., mult=1), 
+               geom='errorbar', width=0.2,size=0.2)+
+  labs(x="",y='MArelease')+
+  scale_y_continuous(limits = c(0,700))+
+  scale_fill_manual(values=c("#BFBF4D", "#F99F98", "#4DC8F9"))+
+  mytheme+
+  guides(fill="none")
+NIM_MArelease_Bar
+setwd(wdOutput)
+getwd()
+ggsave(paste("NIM_MArelease_Bar",".pdf",sep=""),
+       NIM_MArelease_Bar,device=cairo_pdf,width=40,height=42,dpi = 300,units = "mm")
+

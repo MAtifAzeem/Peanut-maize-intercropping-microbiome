@@ -1,6 +1,8 @@
+#time: ~ 5h
 ###activate conda environment
 conda activate qiime2-2021.8
 ###importing data and demultiplexing sequences
+#time:~ 2h
 time qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
   --input-path FourStages_pe-33-manifest.txt \
@@ -20,6 +22,7 @@ time qiime demux summarize \
 #overlap is 15
 ##--p-n-threads was setted to 0 to use all available cores for multithreaded processing
 
+#~ 2h
 time qiime dada2 denoise-paired \
   --i-demultiplexed-seqs FourStages-Paired-end-demux.qza \
   --p-trim-left-f 26\
