@@ -163,7 +163,7 @@ qiime feature-table summarize \
 
 ##library size normalization by scaling with ranked subsampling(SRS)
 #using SRS Shiny app for the determination of Cmin(sampling depth),reference doi:10.7717/peerj.9593
-pip instFourStages git+https://github.com/vitorheidrich/q2-srs.git
+pip install git+https://github.com/vitorheidrich/q2-srs.git
 qiime srs SRS \
   --i-table FourStages/FourStages-DAD2-F295+R205/Filtered1/Filtered1-Data/table-FourStages-DAD2-F295+R205-filtered-table-sample-contingency-Filtered1.qza \
   --p-c-min 17063 \
