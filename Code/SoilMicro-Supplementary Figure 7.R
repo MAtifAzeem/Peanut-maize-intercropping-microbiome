@@ -82,6 +82,7 @@ genus_biomarker_mean<-genus_biomarker_mean[c(9:12,1:8,13:16),]
 genus_biomarker_RelativeAbundance <- genus_biomarker_mean[,-c(1:5)]
 genus_biomarker_RelativeAbundance_MM_IM_MP<-genus_biomarker_RelativeAbundance[c(1:12),]
 genus_biomarker_RelativeAbundance_MM_IM_MP_Normalization<-t(scale(genus_biomarker_RelativeAbundance_MM_IM_MP,center = T))
+genus_biomarker_RelativeAbundance_MM_IM_MP_Normalization
 colnames(genus_biomarker_RelativeAbundance_MM_IM_MP_Normalization)<-genus_biomarker_mean$SystemSpeciesDays[c(1:12)]
 View(genus_biomarker_RelativeAbundance_MM_IM_MP_Normalization)
 ### 4.2 Complexheatmap ###

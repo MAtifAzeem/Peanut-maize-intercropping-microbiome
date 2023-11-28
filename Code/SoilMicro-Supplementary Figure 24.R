@@ -59,11 +59,11 @@ wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental 
 #### 3.1 Import and process data ####
 setwd(wdImport)
 SterilePotreduction<- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig s25 reduction")
+                             sheet = "fig s24 reduction")
 SterilePotreduction$Treatment3<-factor(SterilePotreduction$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 SterilePot_MArelease <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                  sheet = "fig s25 DMA")
+                                  sheet = "fig s24 DMA")
 SterilePot_MArelease$Treatment3<-factor(SterilePot_MArelease$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 #### 4 SIP ####
@@ -74,8 +74,8 @@ leveneTest(ReductionValue ~ Treatment3, data = SIP_reduction)#p>0.05，则满足
 shapiro.test(SIP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_SIP_reduction<-aov(data=SIP_reduction,ReductionValue~Treatment3)
 summary(aov_model_SIP_reduction)
-LSD_model_SIP_reduction<- LSD.test(aov_model_SIP_reduction,"Treatment3",p.adj = "BH")
-LSD_model_SIP_reduction
+LSD.test(aov_model_SIP_reduction,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_SIP_reduction,"Treatment3",p.adj = "BH",console = T,group = F)
 # 4.1.2 Plots #
 SIP_reduction_Bar<-ggplot(SIP_reduction,aes(Treatment3,ReductionValue))+
   geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
@@ -101,8 +101,8 @@ leveneTest(ReductionValue ~ Treatment3, data = NIP_reduction)#p>0.05，则满足
 shapiro.test(NIP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIP_reduction<-aov(data=NIP_reduction,ReductionValue~Treatment3)
 summary(aov_model_NIP_reduction)
-LSD_model_NIP_reduction<- LSD.test(aov_model_NIP_reduction,"Treatment3",p.adj = "BH")
-LSD_model_NIP_reduction
+LSD.test(aov_model_NIP_reduction,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NIP_reduction,"Treatment3",p.adj = "BH",console = T,group = F)
 # 5.1.2 Plots #
 NIP_reduction_Bar<-ggplot(NIP_reduction,aes(Treatment3,ReductionValue))+
   geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
@@ -128,8 +128,8 @@ leveneTest(ReductionValue ~ Treatment3, data = SMP_reduction)#p>0.05，则满足
 shapiro.test(SMP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_SMP_reduction<-aov(data=SMP_reduction,ReductionValue~Treatment3)
 summary(aov_model_SMP_reduction)
-LSD_model_SMP_reduction<- LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH")
-LSD_model_SMP_reduction
+LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH",console = T,group = F)
 # 6.1.2 Plots #
 SMP_reduction_Bar<-ggplot(SMP_reduction,aes(Treatment3,ReductionValue))+
   geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
@@ -153,13 +153,13 @@ NMP_reduction<-SterilePotreduction%>%filter(Treatment2=="NMP")
 # 7.1.1 statistical analysis #
 leveneTest(ReductionValue ~ Treatment3, data = NMP_reduction)#p>0.05，则满足方差齐性
 shapiro.test(NMP_reduction$ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-NMP_reduction<-NMP_reduction%>%mutate(boxcox_ReductionValue=BoxCox(NMP_reduction$ReductionValue,lambda = "auto"))
+NMP_reduction<-NMP_reduction%>%mutate(boxcox_ReductionValue=BoxCox(NMP_reduction$ReductionValue,BoxCox.lambda(NMP_reduction$ReductionValue)))
 leveneTest(boxcox_ReductionValue ~ Treatment3, data = NMP_reduction)#p>0.05，则满足方差齐性
 shapiro.test(NMP_reduction$boxcox_ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NMP_reduction<-aov(data=NMP_reduction,boxcox_ReductionValue~Treatment3)
 summary(aov_model_NMP_reduction)
-LSD_model_NMP_reduction<- LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH")
-LSD_model_NMP_reduction
+LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH",console = T,group = F)
 # 7.1.2 Plots #
 NMP_reduction_Bar<-ggplot(NMP_reduction,aes(Treatment3,ReductionValue))+
   geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
@@ -185,8 +185,8 @@ leveneTest(MAReleaseValue ~ Treatment3, data = SIM_MArelease)#p>0.05，则满足
 shapiro.test(SIM_MArelease$MAReleaseValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_SIM_MArelease<-aov(data=SIM_MArelease,MAReleaseValue~Treatment3)
 summary(aov_model_SIM_MArelease)
-LSD_model_SIM_MArelease<- LSD.test(aov_model_SIM_MArelease,"Treatment3",p.adj = "BH")
-LSD_model_SIM_MArelease
+LSD.test(aov_model_SIM_MArelease,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_SIM_MArelease,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 8.2 statistical analysis #
 SIM_MArelease_Bar<-ggplot(SIM_MArelease,aes(Treatment3,MAReleaseValue))+
@@ -213,8 +213,8 @@ leveneTest(MAReleaseValue ~ Treatment3, data = NIM_MArelease)#p>0.05，则满足
 shapiro.test(NIM_MArelease$MAReleaseValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIM_MArelease<-aov(data=NIM_MArelease,MAReleaseValue~Treatment3)
 summary(aov_model_NIM_MArelease)
-LSD_model_NIM_MArelease<- LSD.test(aov_model_NIM_MArelease,"Treatment3",p.adj = "BH")
-LSD_model_NIM_MArelease
+LSD.test(aov_model_NIM_MArelease,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NIM_MArelease,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 5.4.2 statistical analysis #
 NIM_MArelease_Bar<-ggplot(NIM_MArelease,aes(Treatment3,MAReleaseValue))+

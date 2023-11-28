@@ -15,6 +15,8 @@ library(Cairo)#抗锯齿,anti-aliasing
 library(agricolae)#多重比较，Multiple comparisons.
 library(rcompanion)
 library(car)
+library(ape)
+library(phyloseq)
 
 #### 2. Setting themes and working dictionary path ####
 loadfonts()
@@ -85,7 +87,7 @@ ggsave("chao1_Peanut_line.pdf",
        chao1_Peanut_line,
        device=cairo_pdf,width=40,height=50,dpi = 300,units = "mm")
 
-### 4.2 chao1_Peanut ###
+### 4.2 shannon_Peanut ###
 ## 4.2.1 Statistic analysis ##
 alpha_diversity_Peanut <- alpha_diversity%>%filter(Species=="Peanut")
 scheirerRayHare(data=alpha_diversity_Peanut, shannon~System*Days)
@@ -137,7 +139,7 @@ ggsave("chao1_Maize_line.pdf",
        chao1_Maize_line,
        device=cairo_pdf,width=40,height=50,dpi = 300,units = "mm")
 
-### 4.4 chao1_Maize ###
+### 4.4 shannon_Maize ###
 ## 4.4.1 Statistic analysis ##
 alpha_diversity_Maize <- alpha_diversity%>%filter(Species=="Maize")
 scheirerRayHare(data=alpha_diversity_Maize, shannon~System*Days)
@@ -163,15 +165,17 @@ ggsave("shannon_Maize_line.pdf",
        shannon_Maize_line,
        device=cairo_pdf,width=40,height=53,dpi = 300,units = "mm")
 
-data.set.name = '_FourStages_rhizosphere_DAD2_F295_R205_Filtered1' 
-
 #### 5. Fig. s3b similarity ####
 data.set.name = '_FourStages_rhizosphere_DAD2_F295_R205_Filtered1'
 #### 5.1.unifrac_similarity ####
 ### 46 days ###
 ## unifrac_distance_46days ##
 setwd(wdImport)
+ASVCount <- read.table("feature_table_FourStages_rhizosphere_DAD2_F295_R205_Filtered1.txt",header=T,row.names = 1,na.strings = c("NA"))
+SampleData <- read.table("FourStages_rhizosphere_SampleData.txt",header=T,row.names = 1,na.strings = c("NA"))
+colnames(ASVCount)<- row.names(SampleData)
 RootedTree_FourStages_rhizosphere_Filtered1 <- read.tree("rooted_tree_FourStages_rhizosphere_DAD2_F295_R205_Filtered1.nwk")
+
 Df <- phyloseq(otu_table(ASVCount, taxa_are_rows = T),sample_data(SampleData),phy_tree(RootedTree_FourStages_rhizosphere_Filtered1))
 Df
 Dfr <-transform_sample_counts(Df, function(x) x / sum(x) )

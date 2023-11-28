@@ -59,15 +59,15 @@ wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental 
 #### 3.1 Import and process data ####
 setwd(wdImport)
 NIP_SPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig s24 SPAD of NIP")
+                             sheet = "fig s23 SPAD of NIP")
 NIP_SPAD$Treatment3<-factor(NIP_SPAD$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 NIP_Iron <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                  sheet = "fig s24 iron of NIP")
+                                  sheet = "fig s23 iron of NIP")
 NIP_Iron$Treatment3<-factor(NIP_Iron$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 NIP_Biomass <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                       sheet = "fig s24 biomass of NIP")
+                       sheet = "fig s23 biomass of NIP")
 NIP_Biomass$Treatment3<-factor(NIP_Biomass$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 #### 4 NIP ####
@@ -78,8 +78,8 @@ shapiro.test(NIP_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indi
 compare_means(data=NIP_SPAD,YL_SPAD~Treatment3,method = "t.test")
 aov_model_NIP_SPAD<-aov(data=NIP_SPAD,YL_SPAD~Treatment3)
 summary(aov_model_NIP_SPAD)
-LSD_model_NIP_SPAD<- LSD.test(aov_model_NIP_SPAD,"Treatment",p.adj = "BH")
-LSD_model_NIP_SPAD
+LSD.test(aov_model_NIP_SPAD,"Treatment",p.adj = "BH",console = T)
+LSD.test(aov_model_NIP_SPAD,"Treatment",p.adj = "BH",console = T,group = F)
 
 # 4.1.2 Plots #
 NIP_SPAD_Bar<-ggplot(NIP_SPAD,aes(Treatment3,YL_SPAD))+
@@ -102,12 +102,12 @@ ggsave(paste("NIP_SPAD_Bar",".pdf",sep=""),
 # 4.2.1 statistical analysis #
 leveneTest(YL_ActiveFe ~ Treatment3, data = NIP_Iron)#p>0.05，则满足方差齐性
 shapiro.test(NIP_Iron$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-NIP_Iron<-NIP_Iron%>%mutate(boxcox_YL_ActiveFe=BoxCox(NIP_Iron$YL_ActiveFe,lambda="auto"))
+NIP_Iron<-NIP_Iron%>%mutate(boxcox_YL_ActiveFe=BoxCox(NIP_Iron$YL_ActiveFe,BoxCox.lambda(NIP_Iron$YL_ActiveFe)))
 shapiro.test(NIP_Iron$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIP_ActiveFe<-aov(data=NIP_Iron,boxcox_YL_ActiveFe~Treatment3)
 summary(aov_model_NIP_ActiveFe)
-LSD_model_NIP_ActiveFe<- LSD.test(aov_model_NIP_ActiveFe,"Treatment3",p.adj = "BH")
-LSD_model_NIP_ActiveFe
+LSD.test(aov_model_NIP_ActiveFe,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NIP_ActiveFe,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 4.2.2 statistical analysis #
 NIP_YL_ActiveFe_Bar<-ggplot(NIP_Iron,aes(Treatment3,YL_ActiveFe))+
@@ -133,8 +133,8 @@ leveneTest(availableFe ~ Treatment3, data = NIP_Iron)#p>0.05，则满足方差�
 shapiro.test(NIP_Iron$availableFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIP_AvailableFe<-aov(data=NIP_Iron,availableFe~Treatment3)
 summary(aov_model_NIP_AvailableFe)
-LSD_model_NIP_AvailableFe<- LSD.test(aov_model_NIP_AvailableFe,"Treatment3",p.adj = "BH")
-LSD_model_NIP_AvailableFe
+LSD.test(aov_model_NIP_AvailableFe,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NIP_AvailableFe,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 4.3.2 Plots #
 NIP_AvailableFe_Bar<-ggplot(NIP_Iron,aes(Treatment3,availableFe))+
@@ -160,8 +160,8 @@ leveneTest(Total ~ Treatment3, data = NIP_Biomass)#p>0.05，则满足方差齐�
 shapiro.test(NIP_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIP_Biomass<-aov(data=NIP_Biomass,Total~Treatment3)
 summary(aov_model_NIP_Biomass)
-LSD_model_NIP_Biomass<- LSD.test(aov_model_NIP_Biomass,"Treatment3",p.adj = "BH")
-LSD_model_NIP_Biomass
+LSD.test(aov_model_NIP_Biomass,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NIP_Biomass,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 4.4.2 Plots #
 NIP_Biomass_Bar<-ggplot(NIP_Biomass,aes(Treatment3,Total))+

@@ -71,7 +71,7 @@ peanut_activeFe_available_cor_line
 
 formula <- y ~ x
 peanut_activeFe_available_cor_line <- ggplot(Iron, aes(x= AvailableFe, y= YL_ActiveFe))+
-  geom_point(color="#E64B35")+
+  geom_point(aes(color=SystemSpecies))+
   geom_smooth(method = "lm",color="#E64B35")+
   stat_regline_equation(
     aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~")),
@@ -86,3 +86,43 @@ ggsave(paste("peanut_activeFe_available_cor_line",data.set.name,".pdf",sep=""),
        peanut_activeFe_available_cor_line,
        device=cairo_pdf,width=80,height=60,dpi = 600,units = "mm")
 
+#### 3. Loading and progressing data####
+#### 3.1 Amplicon data####
+#### 3.2 Physiological_data####
+setwd(wdImport1)
+intercropping_pH <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
+                               sheet = "pH")
+intercropping_pH
+intercropping_pH$System<-factor(intercropping_pH$System,levels = c("Intercropping","Monocropping"))
+
+#### 4. Plot #####
+#### 4.1 pH #####
+leveneTest(pH ~ SystemSpeciesDays, data = intercropping_pH)#p>0.05，则满足方差齐性
+shapiro.test(intercropping_pH$pH)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+intercropping_pH<-intercropping_pH%>%mutate(boxcox_pH=BoxCox(intercropping_pH$pH, BoxCox.lambda(intercropping_pH$pH)))
+leveneTest(boxcox_pH ~ SystemSpeciesDays, data = intercropping_pH)#p>0.05，则满足方差齐性
+shapiro.test(intercropping_pH$boxcox_pH)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+pH_wilcox<-compare_means(pH~SystemSpeciesDays,intercropping_pH,method="wilcox.test")
+pH_wilcox
+library(rcompanion)
+intercropping_pH$System <- factor(intercropping_pH$System)
+intercropping_pH$Days <- factor(intercropping_pH$Days)
+str(intercropping_pH)
+head(intercropping_pH)
+scheirerRayHare(pH~System*Days+Days:System, data = intercropping_pH)
+
+Pot_Intercropping_pH_line<-ggplot(intercropping_pH, aes(x=Days, y=pH, fill=System,group=System)) +
+  stat_summary(fun.data="mean_cl_boot", geom="ribbon",
+               alpha=I(.2)) +
+  stat_summary(fun="mean", geom="line",size=0.2,aes(col=System)) +
+  stat_summary(fun="mean", geom="point",size=0.2,aes(col=System)) +
+  mytheme+
+  labs(x="dps",
+       y="pH",parse =T)+
+  scale_y_continuous(limits=c(0,9),breaks=c(0,2,4,6,8))+
+  guides(fill="none",color="none")+
+  scale_color_npg()+scale_fill_npg()
+Pot_Intercropping_pH_line
+setwd(wdOutput)
+getwd()
+ggsave("Pot_Intercropping_pH_line.pdf",device=cairo_pdf,width=40,height=40,dpi = 300,units = "mm")

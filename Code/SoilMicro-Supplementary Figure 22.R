@@ -58,15 +58,15 @@ wdOutput <- ("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental 
 #### 3.1 Import and process data ####
 setwd(wdImport)
 SterilePotSPAD <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                             sheet = "fig s23 SPAD")
+                             sheet = "fig s22 SPAD")
 SterilePotSPAD$Treatment3<-factor(SterilePotSPAD$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 SterilePot_ActiveFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                  sheet = "fig s23 activeFe")
+                                  sheet = "fig s22 activeFe")
 SterilePot_ActiveFe$Treatment3<-factor(SterilePot_ActiveFe$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 SterilePot_Biomass <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                                 sheet = "fig s23 biomass")
+                                 sheet = "fig s22 biomass")
 SterilePot_Biomass$Treatment3<-factor(SterilePot_Biomass$Treatment3,levels=c("CK","1502IPR-01","Pyoverdine"))
 
 #SterilePot_AvailableFe <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
@@ -111,13 +111,13 @@ SIM_ActiveFe
 # 4.2.1 statistical analysis #
 leveneTest(YL_ActiveFe ~ Treatment3, data = SIM_ActiveFe)#p>0.05，则满足方差齐性
 shapiro.test(SIM_ActiveFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-SIM_ActiveFe<-SIM_ActiveFe%>%mutate(boxcox_YL_ActiveFe=BoxCox(SIM_ActiveFe$YL_ActiveFe,lambda="auto"))
+SIM_ActiveFe<-SIM_ActiveFe%>%mutate(boxcox_YL_ActiveFe=BoxCox(SIM_ActiveFe$YL_ActiveFe,BoxCox.lambda(SIM_ActiveFe$YL_ActiveFe)))
 leveneTest(boxcox_YL_ActiveFe ~ Treatment3, data = SIM_ActiveFe)#p>0.05，则满足方差齐性
 shapiro.test(SIM_ActiveFe$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_SIM_ActiveFe<-aov(data=SIM_ActiveFe,boxcox_YL_ActiveFe~Treatment3)
 summary(aov_model_SIM_ActiveFe)
-LSD_model_SIM_ActiveFe<- LSD.test(aov_model_SIM_ActiveFe,"Treatment3",p.adj = "BH")
-LSD_model_SIM_ActiveFe
+LSD.test(aov_model_SIM_ActiveFe,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_SIM_ActiveFe,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 4.2.2 statistical analysis #
 SIM_YL_ActiveFe_Bar<-ggplot(SIM_ActiveFe,aes(Treatment3,YL_ActiveFe))+
@@ -177,8 +177,8 @@ leveneTest(Total ~ Treatment3, data = SIM_Biomass)#p>0.05，则满足方差齐�
 shapiro.test(SIM_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_SIM_Biomass<-aov(data=SIM_Biomass,Total~Treatment3)
 summary(aov_model_SIM_Biomass)
-LSD_model_SIM_Biomass<- LSD.test(aov_model_SIM_Biomass,"Treatment3",p.adj = "BH")
-LSD_model_SIM_Biomass
+LSD.test(aov_model_SIM_Biomass,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_SIM_Biomass,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 4.5.2 plots #
 SIM_Biomass_Bar<-ggplot(SIM_Biomass,aes(Treatment3,Total))+
@@ -204,14 +204,14 @@ NIM_SPAD<-SterilePotSPAD%>%filter(Treatment2=="NIM")
 # 5.1.1 statistical analysis #
 leveneTest(YL_SPAD ~ Treatment3, data = NIM_SPAD)#p>0.05，则满足方差齐性
 shapiro.test(NIM_SPAD$YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-NIM_SPAD<-NIM_SPAD%>%mutate(boxcox_YL_SPAD=BoxCox(NIM_SPAD$YL_SPAD,lambda="auto"))
+NIM_SPAD<-NIM_SPAD%>%mutate(boxcox_YL_SPAD=BoxCox(NIM_SPAD$YL_SPAD,BoxCox.lambda(NIM_SPAD$YL_SPAD)))
 leveneTest(boxcox_YL_SPAD ~ Treatment3, data = NIM_SPAD)#p>0.05，则满足方差齐性
 shapiro.test(NIM_SPAD$boxcox_YL_SPAD)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIM_SPAD<-aov(data=NIM_SPAD,YL_SPAD~Treatment3)
 summary(aov_model_NIM_SPAD)
 #Nonparametric tests
 kruskal.test(YL_SPAD~Treatment3, data = NIM_SPAD)
-aov_model_NIM_SPAD<-aov(data=SIM_SPAD,YL_SPAD~Treatment3)
+aov_model_NIM_SPAD<-aov(data=NIM_SPAD,YL_SPAD~Treatment3)
 dunnettT3Test(aov_model_NIM_SPAD,p.adjust.method = "BH")
 
 # 5.1.2 Plots #
@@ -237,13 +237,13 @@ NIM_ActiveFe
 # 5.2.1 statistical analysis #
 leveneTest(YL_ActiveFe ~ Treatment3, data = NIM_ActiveFe)#p>0.05，则满足方差齐性
 shapiro.test(NIM_ActiveFe$YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
-NIM_ActiveFe<-NIM_ActiveFe%>%mutate(boxcox_YL_ActiveFe=BoxCox(NIM_ActiveFe$YL_ActiveFe,lambda="auto"))
+NIM_ActiveFe<-NIM_ActiveFe%>%mutate(boxcox_YL_ActiveFe=BoxCox(NIM_ActiveFe$YL_ActiveFe,BoxCox.lambda(NIM_ActiveFe$YL_ActiveFe)))
 leveneTest(boxcox_YL_ActiveFe ~ Treatment3, data = NIM_ActiveFe)#p>0.05，则满足方差齐性
 shapiro.test(NIM_ActiveFe$boxcox_YL_ActiveFe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIM_ActiveFe<-aov(data=NIM_ActiveFe,YL_ActiveFe~Treatment3)
 summary(aov_model_NIM_ActiveFe)
-LSD_model_NIM_ActiveFe<- LSD.test(aov_model_NIM_ActiveFe,"Treatment3",p.adj = "BH")
-LSD_model_NIM_ActiveFe
+LSD.test(aov_model_NIM_ActiveFe,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NIM_ActiveFe,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 5.2.2 statistical analysis #
 NIM_YL_ActiveFe_Bar<-ggplot(NIM_ActiveFe,aes(Treatment3,YL_ActiveFe))+
@@ -298,8 +298,8 @@ leveneTest(Total ~ Treatment3, data = NIM_Biomass)#p>0.05，则满足方差齐�
 shapiro.test(NIM_Biomass$Total)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NIM_Biomass<-aov(data=NIM_Biomass,Total~Treatment3)
 summary(aov_model_NIM_Biomass)
-LSD_model_NIM_Biomass<- LSD.test(aov_model_NIM_Biomass,"Treatment3",p.adj = "BH")
-LSD_model_NIM_Biomass
+LSD.test(aov_model_NIM_Biomass,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NIM_Biomass,"Treatment3",p.adj = "BH",console = T,group = F)
 
 # 5.5.2 statistical analysis #
 NIM_Biomass_Bar<-ggplot(NIM_Biomass,aes(Treatment3,Total))+
