@@ -16,6 +16,8 @@ library(pheatmap)#heatmapping
 library(cluster)#hierarchical clustering
 library(psych)#correlationship analysis#
 library(VennDiagram)#Venn plot
+library(car)#方差齐性检验，homogeneity test of variance, levene test
+library(forecast)#box-cox数据变换
 
 #### 2. Setting themes and working dictionary path ####
 loadfonts()
@@ -91,7 +93,7 @@ ggsave(paste("peanut_activeFe_available_cor_line",data.set.name,".pdf",sep=""),
 #### 3.2 Physiological_data####
 setwd(wdImport1)
 intercropping_pH <- read_excel("Intercropping-microbiome-Data for submit.xlsx",
-                               sheet = "pH")
+                               sheet = "fig s6")
 intercropping_pH
 intercropping_pH$System<-factor(intercropping_pH$System,levels = c("Intercropping","Monocropping"))
 

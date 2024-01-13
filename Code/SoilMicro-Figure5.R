@@ -369,11 +369,6 @@ summary(aov_model_NMP_ActiveFe)
 LSD.test(aov_model_NMP_ActiveFe,"Treatment3",p.adj = "BH",console = T)
 LSD.test(aov_model_NMP_ActiveFe,"Treatment3",p.adj = "BH",console = T,group = F)
 
-#Non-parameter test
-kruskal.test(YL_ActiveFe~Treatment3, data = NMP_ActiveFe)
-aov_model_NMP_ActiveFe<-aov(data=NMP_ActiveFe,boxcox_YL_ActiveFe~Treatment3)
-dunnettT3Test(aov_model_NMP_ActiveFe,p.adjust.method = "BH")
-
 # 6.2.2 Plots #
 NMP_YL_ActiveFe_Bar<-ggplot(NMP_ActiveFe,aes(Treatment3,YL_ActiveFe))+
   geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
@@ -558,11 +553,11 @@ ggsave(paste("PY_Field_YL_ActiveFe_box_jitter",".pdf",sep=""),
 BJ_Field_Iron<-Field_Iron[c(1:18),]
 ## 9.1.1 statistical analysis##
 leveneTest(Available_Fe ~ Treatment, data = BJ_Field_Iron)#p>0.05，则满足方差齐性
-shapiro.test(PY_Field_Iron$Available_Fe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
+shapiro.test(BJ_Field_Iron$Available_Fe)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_BJ_Field_AvailableFe<-aov(data=BJ_Field_Iron,Available_Fe~Treatment)
 summary(aov_model_BJ_Field_AvailableFe)
-LSD.test(aov_model_PY_Field_ActiveFe,"Treatment",p.adj = "BH",console = T)
-LSD.test(aov_model_PY_Field_ActiveFe,"Treatment",p.adj = "BH",console = T,group = F)
+LSD.test(aov_model_BJ_Field_AvailableFe,"Treatment",p.adj = "BH",console = T)
+LSD.test(aov_model_BJ_Field_AvailableFe,"Treatment",p.adj = "BH",console = T,group = F)
 
 ## 9.1.2 Plot ##
 BJ_Field_Available_box_jitter<-ggplot(BJ_Field_Iron,aes(Treatment,Available_Fe))+

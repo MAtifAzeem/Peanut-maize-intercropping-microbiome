@@ -53,13 +53,32 @@ wdOutput <- c("E:/working/SCI/Soil Micro/SCI/Figures/Figures from R/Supplemental
 #### 3. Loading and progressing data####
 #### 3.1 Genus Iron correlation####
 setwd(wdImport)
-Iron_All_Genus_Peanut <- read_excel("./Intercropping-microbiome-Data for submit.xlsx",
-                       sheet = "table s1")
-Iron_All_Genus_Peanut$Species <- factor(Iron_All_Genus_Peanut$Species,levels = c("Peanut","Maize"))
+Iron <- read_excel("./Intercropping-microbiome-Data for submit.xlsx",
+                       sheet = "fig 3b")
+Iron_Peanut<- filter(Iron,Species=="Peanut")[,c(1:13)]
+#Genus
+ASVCount <- read.table("feature_table_FourStages_rhizosphere_DAD2_F295_R205_Filtered1.txt",header=T,row.names = 1,na.strings = c("NA"))
+FourStagesSampleData <- read.table("FourStages_rhizosphere_SampleData.txt",header=T,row.names = 1,na.strings = c("NA"))
+taxonomy <- read.table("Sup_taxonomy_FourStages_rhizosphere_DAD2_F295_R205_Filtered1.txt",header=T,sep=",",row.names = 1,fill=TRUE, na.strings = c("NA"))
+ASVPercent  <- as.data.frame(100*sapply(1:ncol(ASVCount),function(x) ASVCount[,x]/sum(ASVCount[,x])))
+colnames(ASVPercent) <- row.names(FourStagesSampleData)
+rownames(ASVPercent) <- row.names(taxonomy)
+TaxonomyASVPercent <- cbind(taxonomy,ASVPercent)
+GenusPercent <- as.data.frame(TaxonomyASVPercent %>% group_by(Genus)%>%
+                                summarise_at(vars(IP1_1:IP4_3,MP1_1 :MP4_3),funs(sum)))
+rownames(GenusPercent)<-GenusPercent$Genus
+GenusPercent<-GenusPercent[,-1]
+PercentGenus<- as.data.table(t(GenusPercent))
+colnames(PercentGenus)<-rownames(GenusPercent)
+PercentGenus
+
+Iron_All_Genus_Peanut<- cbind(Iron_Peanut,PercentGenus)
 Iron_All_Genus_Peanut$System <- factor(Iron_All_Genus_Peanut$System,levels = c("Monocropping","Intercropping"))
-Iron_All_Genus_Peanut$SystemSpecies <- factor(Iron_All_Genus_Peanut$SystemSpecies,levels = c("MP","IP","IM","MM"))
+Iron_All_Genus_Peanut$SystemSpecies <- factor(Iron_All_Genus_Peanut$SystemSpecies,levels = c("MP","IP"))
 library(psych)
-ActiveFe_Genus_cor<-corr.test(Iron_All_Genus_Peanut[8],Iron_All_Genus_Peanut[10:655],
+class(Iron_All_Genus_Peanut)
+Iron_All_Genus_Peanut[,12]
+ActiveFe_Genus_cor<-corr.test((Iron_All_Genus_Peanut[12]),(Iron_All_Genus_Peanut[14:660]),
                                       method="spearman",adjust="BH",minlength=5)
 ActiveFe_Genus_cor
 ActiveFe_Genus_cor$p
@@ -70,7 +89,7 @@ setwd(wdOutput)
 write.table(ActiveFe_Genus_cor_Tab, paste("ActiveFe_Genus_cor_Tab",".txt",sep=""), row.names=F,sep = '\t', quote = FALSE)
 
 
-AvailableFe_Genus_cor<-corr.test(Iron_All_Genus_Peanut[9],Iron_All_Genus_Peanut[10:655],
+AvailableFe_Genus_cor<-corr.test(Iron_All_Genus_Peanut[13,],Iron_All_Genus_Peanut[14:660],
                               method="spearman",adjust="BH",minlength=5)
 AvailableFe_Genus_cor$r
 AvailableFe_Genus_cor$p
@@ -81,24 +100,24 @@ setwd(wdOutput)
 write.table(AvailableFe_Genus_cor_Tab, paste("AvailableFe_Genus_cor_Tab",".txt",sep=""), row.names=F,sep = '\t', quote = FALSE)
 
 #### 3.2 Genus Iron regression####
-Pseudomonas_YlActiveFe_reg <- lm(Pseudomonas~YLActiveFe,data=Iron_All_Genus_Peanut)
+Pseudomonas_YlActiveFe_reg <- lm(g__Pseudomonas~YLActiveFe,data=Iron_All_Genus_Peanut)
 Pseudomonas_YlActiveFe_reg
 Pseudomonas_YlActiveFe_reg_sum<-summary(Pseudomonas_YlActiveFe_reg)
 Pseudomonas_YlActiveFe_reg_sum
 Pseudomonas_YlActiveFe_reg_sum$coefficients[2,4]
 class(Pseudomonas_YlActiveFe_reg_sum$coefficients)
 
-Pseudomonas_AvailableFe_reg <- lm(Pseudomonas~AvailableFe,data=Iron_All_Genus_Peanut)
+Pseudomonas_AvailableFe_reg <- lm(g__Pseudomonas~AvailableFe,data=Iron_All_Genus_Peanut)
 Pseudomonas_AvailableFe_reg
 
 ### 3.2.1 wide to long format
 Iron_All_Genus_Peanut_melt <- melt(Iron_All_Genus_Peanut,id.vars =c("ID"), 
-                                   measure.vars=colnames(Iron_All_Genus_Peanut)[10:655],
+                                   measure.vars=colnames(Iron_All_Genus_Peanut)[14:660],
                                    variable.name="genus",
                                    value.name = "relative_abundance")
-Iron_All_Genus_Peanut_melt$YLActiveFe<-rep(Iron_All_Genus_Peanut$YLActiveFe,length(colnames(Iron_All_Genus_Peanut)[10:655]))
+Iron_All_Genus_Peanut_melt$YLActiveFe<-rep(Iron_All_Genus_Peanut$YLActiveFe,length(colnames(Iron_All_Genus_Peanut)[14:660]))
 
-Iron_All_Genus_Peanut_melt$AvailableFe<-rep(Iron_All_Genus_Peanut$AvailableFe,length(colnames(Iron_All_Genus_Peanut)[10:655]))
+Iron_All_Genus_Peanut_melt$AvailableFe<-rep(Iron_All_Genus_Peanut$AvailableFe,length(colnames(Iron_All_Genus_Peanut)[14:660]))
 
 ### 3.2.2 split the dataframe based on genus name
 Iron_All_Genus_Peanut_melt_list <- split(Iron_All_Genus_Peanut_melt,Iron_All_Genus_Peanut_melt$genus)

@@ -158,8 +158,8 @@ leveneTest(boxcox_ReductionValue ~ Treatment3, data = NMP_reduction)#p>0.05ï¼Œåˆ
 shapiro.test(NMP_reduction$boxcox_ReductionValue)#p<0.05 indicates skewed distribution, p>0.05 indicates normal distribution
 aov_model_NMP_reduction<-aov(data=NMP_reduction,boxcox_ReductionValue~Treatment3)
 summary(aov_model_NMP_reduction)
-LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH",console = T)
-LSD.test(aov_model_SMP_reduction,"Treatment3",p.adj = "BH",console = T,group = F)
+LSD.test(aov_model_NMP_reduction,"Treatment3",p.adj = "BH",console = T)
+LSD.test(aov_model_NMP_reduction,"Treatment3",p.adj = "BH",console = T,group = F)
 # 7.1.2 Plots #
 NMP_reduction_Bar<-ggplot(NMP_reduction,aes(Treatment3,ReductionValue))+
   geom_bar(stat = "summary", fun = "mean",color="black",aes(fill=Treatment3),width=0.5,size=0.15)+
